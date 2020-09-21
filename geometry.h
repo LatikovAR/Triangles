@@ -8,6 +8,8 @@ struct point {
     double z;
 };
 
+bool is_points_match(point &p1, point &p2);
+
 struct point_2d {
     double x;
     double y;

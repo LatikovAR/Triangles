@@ -20,6 +20,15 @@ bool is_real_point(point &p) {
     return true;
 }
 
+bool is_points_match(point &p1, point &p2) {
+    if((abs(p1.x - p2.x) > DOUBLE_GAP) ||
+       (abs(p1.y - p2.y) > DOUBLE_GAP) ||
+       (abs(p1.z - p2.z) > DOUBLE_GAP)) {
+        return false;
+    }
+    return true;
+}
+
 vec vec_on_2p(point &p1, point &p2) {
     vec v;
     v.x = p2.x - p1.x;
@@ -54,6 +63,7 @@ vec mult_vec(vec &v1, vec &v2) {
 point intersection_pc(plane &pl, cut &c) {
     double k, t;
     point p;
+    //pl and c not parallel certainly before this function
     k = pl.a * c.v.x + pl.b * c.v.y + pl.c * c.v.z;
     t = pl.a * c.p.x + pl.b * c.p.y + pl.c * c.p.z + pl.d;
     t = (-1) * t / k;
@@ -190,7 +200,7 @@ bool is_cut_2d_intersects(cut_2d &c1, cut_2d &c2) {
         a1 = (c2.p.x - c1.p.x) / c1.v.x;
         a2 = (c2.p.x + c2.v.x - c1.p.x) / c1.v.x;
         if((std::isinf(a1)) || (std::isnan(a1)) ||
-           (std::isinf(a2)) || (std::isnan(a2))) {
+           (std::isinf(a2)) || (std::isnan(a2))) { //because lines can be parallel with coordinate lines
             a1 = (c2.p.y - c1.p.y) / c1.v.y;
             a2 = (c2.p.y + c2.v.y - c1.p.y) / c1.v.y;
         }

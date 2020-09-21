@@ -43,12 +43,15 @@ int main() {
     for(int i = 0; i < n; i++) {
         is_t_intersects[i] = false;
     }
+
     std::list <triangle> l_t;
     for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
     }
     assert((int) l_t.size() == n);
+
     check_t_intersections(l_t, is_t_intersects);
+
     int counter = 0;
     for(int i = 0; i < n; i++) {
         if(is_t_intersects[i] == true) {
@@ -72,6 +75,8 @@ void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects) {
         int ind;
         while(l_t.size() > 0) {
             ind = triangle_side_by_plane(l_t.front(), pl);
+            //return triangle position relative to plane
+            //0 - intersect, 1 and -1 - one or another side entirely
             if(ind == -1) {
                 l_t1.push_front(l_t.front());
             }
@@ -91,10 +96,10 @@ void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects) {
             l_t.pop_front();
         }
         if(l_t1.size() > 0) {
-            check_t_intersections(l_t1, is_t_intersects);
+            check_t_intersections(l_t1, is_t_intersects); //recursion
         }
         if(l_t2.size() > 0) {
-            check_t_intersections(l_t2, is_t_intersects);
+            check_t_intersections(l_t2, is_t_intersects); //recursion
         }
     }
 }
@@ -135,6 +140,7 @@ bool check_intersection(triangle &t, plane &pl, triangle &t1) {
 
 bool check_t_on_match_pl(plane &pl, triangle &t1, triangle &t2) {
     point_2d p1_2d, p2_2d, p3_2d;
+    //moving to 2d with checking case if pl is parallel to coordinate plane
     if((abs(pl.a) <= abs(pl.c)) && (abs(pl.b) <= abs(pl.c))) {
         p1_2d.x = t1.p1_ret().x;
         p1_2d.y = t1.p1_ret().y;
@@ -206,7 +212,7 @@ bool check_common_way_intersection(triangle &t, plane &pl, triangle &t1) {
     c1_ind = cut_and_plane_pos(pl, c1);
     c2_ind = cut_and_plane_pos(pl, c2);
     c3_ind = cut_and_plane_pos(pl, c3);
-
+    //cases if some t1 cut lies on pl
     if(c1_ind == MATCH) {
         return check_cut_and_triangle_intersection_on_place(t, pl, c1);
     }
@@ -217,6 +223,7 @@ bool check_common_way_intersection(triangle &t, plane &pl, triangle &t1) {
         return check_cut_and_triangle_intersection_on_place(t, pl, c3);
     }
 
+    //common way: searching two points which t1 cuts intersect pl
     i = 0;
     p1 = t1.p1_ret();
     p2 = t1.p2_ret();
@@ -238,6 +245,11 @@ bool check_common_way_intersection(triangle &t, plane &pl, triangle &t1) {
     }
     assert(i == 2);
 
+    //case if triangle corner lies on pl
+    if(is_points_match(p[0], p[1])) {
+        return t.is_in_triangle(p[0]);
+    }
+
     cut c(p[0], p[1]);
     return check_cut_and_triangle_intersection_on_place(t, pl, c);
 }
@@ -245,6 +257,8 @@ bool check_common_way_intersection(triangle &t, plane &pl, triangle &t1) {
 bool check_cut_and_triangle_intersection_on_place(triangle &t, plane &pl, cut &c) {
     point_2d p1_2d, p2_2d, p3_2d;
     vec_2d v_2d;
+    //moving to 2d with checking case if pl is parallel to coordinate plane
+    //c lies on pl certainly
     if((abs(pl.a) <= abs(pl.c)) && (abs(pl.b) <= abs(pl.c))) {
         p1_2d.x = t.p1_ret().x;
         p1_2d.y = t.p1_ret().y;
@@ -295,6 +309,7 @@ bool check_cut_and_triangle_intersection_on_place(triangle &t, plane &pl, cut &c
 bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2) {
     point_2d p1, p2;
 
+    //checking case if triangle corners lie into other triangle
     p1 = t2.p1_ret();
     if(t1.is_in_triangle(p1)) return true;
     p1 = t2.p2_ret();
@@ -309,6 +324,7 @@ bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2) {
     p1 = t1.p3_ret();
     if(t2.is_in_triangle(p1)) return true;
 
+    //searching for cuts intersection
     p1 = t1.p1_ret();
     p2 = t1.p2_ret();
     cut_2d c11(p1, p2); // why cut_2d c11(t1.p1_ret(), t1.p2_ret()); not works?
@@ -345,6 +361,7 @@ bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2) {
 
 bool check_t_and_c_intersection_2d(triangle_2d &t, cut_2d &c) {
     point_2d p1, p2;
+    //check points lie into triangle
     p1 = c.p;
     if(t.is_in_triangle(p1)) {
         return true;
@@ -355,6 +372,7 @@ bool check_t_and_c_intersection_2d(triangle_2d &t, cut_2d &c) {
         return true;
     }
 
+    //searching for cuts intersection
     p1 = t.p1_ret();
     p2 = t.p2_ret();
     cut_2d c_t1(p1, p2);
