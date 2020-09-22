@@ -115,6 +115,12 @@ public:
     point p3_ret() {
         return p3;
     }
+    void reinit(point &i1, point &i2, point &i3, int n) {
+        p1 = i1;
+        p2 = i2;
+        p3 = i3;
+        number = n;
+    }
     bool is_in_triangle(point &p);
 };
 

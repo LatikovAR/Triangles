@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "geometry.h"
+#include "triangle_test.h"
 
 triangle input_triangle(int n);
 void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects);
@@ -25,6 +26,23 @@ void test_triangle_and_plane() {
     std::cout << pl.point_side_plane(p) << "\n";
 }
 
+int small_test(std::list <triangle> *l_t) {
+    vec v1, v2, v3;
+    point p;
+    v1.x = 1;
+    v1.y = 1;
+    v1.z = 1;
+    v2.x = 10;
+    v2.y = -10;
+    v2.z = 10;
+    v3.x = -0.01;
+    v3.y = 1.1;
+    v3.z = 0.245;
+    p.x = p.y = p.z = 0;
+    make_octahedron(l_t, v1, v2, v3, p);
+    return 8;
+}
+
 triangle input_triangle(int n) {
     point p1, p2, p3;
     std::cin >> p1.x >> p1.y >> p1.z;
@@ -37,28 +55,27 @@ triangle input_triangle(int n) {
 int main() {
     int n;
     bool *is_t_intersects;
-    std::cin >> n;
+    std::list <triangle> l_t;
+    //std::cin >> n;
+    n = small_test(&l_t);
     is_t_intersects = new bool[n];
     assert(is_t_intersects != nullptr);
     for(int i = 0; i < n; i++) {
         is_t_intersects[i] = false;
     }
 
-    std::list <triangle> l_t;
-    for(int i = 0; i < n; i++) {
+    /*for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
-    }
+    }*/
     assert((int) l_t.size() == n);
 
     check_t_intersections(l_t, is_t_intersects);
 
-    int counter = 0;
     for(int i = 0; i < n; i++) {
         if(is_t_intersects[i] == true) {
-            counter++;
+            std::cout << i << "\n";
         }
     }
-    std::cout << "Number of intersected triangles: " << counter << "\n";
     delete [] is_t_intersects;
     return 0;
 }
