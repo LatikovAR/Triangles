@@ -56,17 +56,17 @@ int main() {
     int n;
     bool *is_t_intersects;
     std::list <triangle> l_t;
-    //std::cin >> n;
-    n = small_test(&l_t);
+    std::cin >> n;
+    //n = small_test(&l_t);
     is_t_intersects = new bool[n];
     assert(is_t_intersects != nullptr);
     for(int i = 0; i < n; i++) {
         is_t_intersects[i] = false;
     }
 
-    /*for(int i = 0; i < n; i++) {
+    for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
-    }*/
+    }
     assert((int) l_t.size() == n);
 
     check_t_intersections(l_t, is_t_intersects);
