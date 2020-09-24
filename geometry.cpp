@@ -21,9 +21,9 @@ bool is_real_point(point &p) {
 }
 
 bool is_points_match(point &p1, point &p2) {
-    if((abs(p1.x - p2.x) > DOUBLE_GAP) ||
-       (abs(p1.y - p2.y) > DOUBLE_GAP) ||
-       (abs(p1.z - p2.z) > DOUBLE_GAP)) {
+    if((fabs(p1.x - p2.x) > DOUBLE_GAP) ||
+       (fabs(p1.y - p2.y) > DOUBLE_GAP) ||
+       (fabs(p1.z - p2.z) > DOUBLE_GAP)) {
         return false;
     }
     return true;
@@ -136,9 +136,9 @@ g_obj_pos planes_pos(plane &pl1, plane &pl2) {
     n2 = sqrt(pl2.a * pl2.a + pl2.b * pl2.b + pl2.c * pl2.c);
     assert(n1 > 0);
     assert(n2 > 0);
-    if((abs(pl1.a / n1 - pl2.a / n2) > DOUBLE_GAP) ||
-       (abs(pl1.b / n1 - pl2.b / n2) > DOUBLE_GAP) ||
-       (abs(pl1.c / n1 - pl2.c / n2) > DOUBLE_GAP)) {
+    if((fabs(pl1.a / n1 - pl2.a / n2) > DOUBLE_GAP) ||
+       (fabs(pl1.b / n1 - pl2.b / n2) > DOUBLE_GAP) ||
+       (fabs(pl1.c / n1 - pl2.c / n2) > DOUBLE_GAP)) {
         return COMMON;
     }
     if(abs(pl1.d / n1 - pl2.d / n2) > DOUBLE_GAP) {
@@ -151,10 +151,10 @@ g_obj_pos cut_and_plane_pos(plane &pl, cut &c) {
     double n;
     n = sqrt(pl.a * pl.a + pl.b * pl.b + pl.c * pl.c);
     assert(n > 0);
-    if(abs(c.v.x * pl.a + c.v.y * pl.b + c.v.z * pl.c) / n > DOUBLE_GAP) {
+    if(fabs(c.v.x * pl.a + c.v.y * pl.b + c.v.z * pl.c) / n > DOUBLE_GAP) {
         return COMMON;
     }
-    if(abs(c.p.x * pl.a + c.p.y * pl.b + c.p.z * pl.c + pl.d) / n > DOUBLE_GAP) {
+    if(fabs(c.p.x * pl.a + c.p.y * pl.b + c.p.z * pl.c + pl.d) / n > DOUBLE_GAP) {
         return PARALLEL;
     }
     return MATCH;
@@ -166,8 +166,8 @@ g_obj_pos lines_pos_2d(cut_2d &c1, cut_2d &c2) {
     n2 = sqrt(c2.v.x * c2.v.x + c2.v.y * c2.v.y);
     assert(n1 > 0);
     assert(n2 > 0);
-    if((abs(c1.v.x / n1 - c2.v.x / n2) > DOUBLE_GAP) ||
-       (abs(c1.v.y / n1 - c2.v.y / n2) > DOUBLE_GAP)) {
+    if((fabs(c1.v.x / n1 - c2.v.x / n2) > DOUBLE_GAP) ||
+       (fabs(c1.v.y / n1 - c2.v.y / n2) > DOUBLE_GAP)) {
         return COMMON;
     }
     vec_2d v;
@@ -176,8 +176,8 @@ g_obj_pos lines_pos_2d(cut_2d &c1, cut_2d &c2) {
     double vn;
     vn = sqrt(v.x * v.x + v.y * v.y);
     if(vn > 0) {
-        if((abs(c1.v.x / n1 - v.x / vn) > DOUBLE_GAP) ||
-           (abs(c1.v.y / n1 - v.y / vn) > DOUBLE_GAP)) {
+        if((fabs(c1.v.x / n1 - v.x / vn) > DOUBLE_GAP) ||
+           (fabs(c1.v.y / n1 - v.y / vn) > DOUBLE_GAP)) {
             return PARALLEL;
         }
         else {

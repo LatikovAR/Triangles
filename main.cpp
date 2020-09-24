@@ -6,6 +6,7 @@
 #include "triangle_test.h"
 
 triangle input_triangle(int n);
+void print_triangle(triangle &t);
 void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects);
 int triangle_side_by_plane(triangle &t, plane &pl);
 bool check_intersection(triangle &t, plane &pl, triangle &t1);
@@ -50,6 +51,18 @@ triangle input_triangle(int n) {
     std::cin >> p3.x >> p3.y >> p3.z;
     triangle t(p1, p2, p3, n);
     return t;
+}
+
+void print_triangle(triangle &t) {
+    point p;
+    p = t.p1_ret();
+    std::cout << p.x << " " << p.y << " " << p.z << "\n";
+    p = t.p2_ret();
+    std::cout << p.x << " " << p.y << " " << p.z << "\n";
+    p = t.p3_ret();
+    std::cout << p.x << " " << p.y << " " << p.z << "\n";
+    //std::cout << t.num() << "\n";
+    std::cout << "\n";
 }
 
 int main() {
