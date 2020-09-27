@@ -131,18 +131,18 @@ int main() {
     int n;
     std::vector <bool> is_t_intersects;
     std::list <geometry::triangle> l_t;
-    //std::cin >> n;
+    std::cin >> n;
     //small_test(&l_t);
     //test1(&l_t);
     //test2(&l_t);
     //test3(&l_t);
     //test4(&l_t);
-    test5(&l_t);
+    //test5(&l_t);
 
-    /*for(int i = 0; i < n; i++) {
+    for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
     }
-    assert((int) l_t.size() == n);*/
+    assert((int) l_t.size() == n);
 
     n = (int) l_t.size();
     for(int i = 0; i < n; i++) {
