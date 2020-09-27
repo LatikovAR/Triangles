@@ -29,14 +29,66 @@ void test_triangle_and_plane() {
     std::cout << pl.point_side_plane(p) << "\n";
 }
 
-int small_test(std::list <geometry::triangle> *l_t) {
+void small_test(std::list <geometry::triangle> *l_t) {
     geometry::vec v1(1, 1, 1);
     geometry::vec v2(10, -10, 10);
     geometry::vec v3(-0.01, 1.1, 0.245);
     geometry::point p(0, 0, 0);
     make_octahedron(l_t, v1, v2, v3, p);
-    return 8;
 }
+
+void test1(std::list <geometry::triangle> *l_t) {
+    geometry::point p1(0, 0, 0);
+    geometry::point p2(10, 0, 0);
+    geometry::point p3(0, 10, 0);
+    geometry::triangle t(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.01, 1);
+}
+
+void test2(std::list <geometry::triangle> *l_t) {
+    geometry::point p1(0, 0, 0);
+    geometry::point p2(10, 0, 0);
+    geometry::point p3(0, 10, 0);
+    geometry::triangle t(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.01, 1);
+    p1 = geometry::point(1, 1, 0);
+    p2 = geometry::point(1, 2, 0);
+    p3 = geometry::point(1, 1, 0.03);
+    t = geometry::triangle(p1, p2, p3, (int) l_t->size());
+    l_t->push_back(t);
+}
+
+void test3(std::list <geometry::triangle> *l_t) {
+    geometry::point p1(0, 0, 0);
+    geometry::point p2(10, 0, 0);
+    geometry::point p3(0, 10, 0);
+    geometry::triangle t(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.01, 1);
+    p1 = geometry::point(1, 1, 0);
+    p2 = geometry::point(1, 2, 0);
+    p3 = geometry::point(1, 1, 0.03);
+    t = geometry::triangle(p1, p2, p3, (int) l_t->size());
+    l_t->push_back(t);
+    p1 = geometry::point(1, 1, 0.5);
+    p2 = geometry::point(1, 2, 0.45);
+    p3 = geometry::point(1, 1, 0.66);
+    t = geometry::triangle(p1, p2, p3, (int) l_t->size());
+    l_t->push_back(t);
+}
+
+void test4(std::list <geometry::triangle> *l_t) {
+    geometry::point p1(0, 0, 0);
+    geometry::point p2(10, 0, 0);
+    geometry::point p3(0, 10, 0);
+    geometry::triangle t(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.01, 1);
+    p1 = geometry::point (0, 0, 0);
+    p2 = geometry::point (10, 0, 0);
+    p3 = geometry::point (0, 0, 0.5);
+    t = geometry::triangle(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.05, -1);
+}
+
 
 geometry::triangle input_triangle(int n) {
     double x, y, z;
@@ -66,16 +118,21 @@ int main() {
     std::vector <bool> is_t_intersects;
     std::list <geometry::triangle> l_t;
     std::cin >> n;
-    //n = small_test(&l_t);
-    for(int i = 0; i < n; i++) {
-        is_t_intersects.push_back(false);
-    }
+    //small_test(&l_t);
+    //test1(&l_t);
+    //test2(&l_t);
+    //test3(&l_t);
+    //test4(&l_t);
 
     for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
     }
     assert((int) l_t.size() == n);
 
+    n = (int) l_t.size();
+    for(int i = 0; i < n; i++) {
+        is_t_intersects.push_back(false);
+    }
     check_t_intersections(l_t, is_t_intersects);
 
     for(int i = 0; i < n; i++) {

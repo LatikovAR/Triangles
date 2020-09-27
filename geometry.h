@@ -99,7 +99,7 @@ private:
     int number;
 public:
     triangle(const point &i1, const point &i2, const point &i3, int n): p1(i1), p2(i2), p3(i3), number(n) {}
-    int num() {
+    int num() const {
         return number;
     }
     plane make_plane() const {
