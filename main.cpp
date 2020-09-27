@@ -89,6 +89,20 @@ void test4(std::list <geometry::triangle> *l_t) {
     make_triangle_stack(l_t, t, 0.05, -1);
 }
 
+void test5(std::list <geometry::triangle> *l_t) {
+    geometry::point p1(0, 0, 0);
+    geometry::point p2(10, 0, 0);
+    geometry::point p3(0, 10, 0);
+    geometry::triangle t(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.01, 1);
+    p1 = geometry::point (0, 0, 0);
+    p2 = geometry::point (10, 0, 0);
+    p3 = geometry::point (0, -10, 0);
+    t = geometry::triangle(p1, p2, p3, 0);
+    make_triangle_stack(l_t, t, 0.01, -1);
+}
+
+
 
 geometry::triangle input_triangle(int n) {
     double x, y, z;
@@ -117,17 +131,18 @@ int main() {
     int n;
     std::vector <bool> is_t_intersects;
     std::list <geometry::triangle> l_t;
-    std::cin >> n;
+    //std::cin >> n;
     //small_test(&l_t);
     //test1(&l_t);
     //test2(&l_t);
     //test3(&l_t);
     //test4(&l_t);
+    test5(&l_t);
 
-    for(int i = 0; i < n; i++) {
+    /*for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
     }
-    assert((int) l_t.size() == n);
+    assert((int) l_t.size() == n);*/
 
     n = (int) l_t.size();
     for(int i = 0; i < n; i++) {
