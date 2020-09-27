@@ -1,61 +1,57 @@
 #include <iostream>
 #include <list>
 #include <cassert>
+#include <vector>
 
 #include "geometry.h"
 #include "triangle_test.h"
 
-triangle input_triangle(int n);
-void print_triangle(triangle &t);
-void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects);
-int triangle_side_by_plane(triangle &t, plane &pl);
-bool check_intersection(triangle &t, plane &pl, triangle &t1);
-bool check_t_on_match_pl(plane &pl, triangle &t1, triangle &t2);
-bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2);
-bool check_t_and_c_intersection_2d(triangle_2d &t, cut_2d &c);
-bool check_common_way_intersection(triangle &t, plane &pl, triangle &t1);
-bool check_cut_and_triangle_intersection_on_place(triangle &t, plane &pl, cut &c);
+geometry::triangle input_triangle(int n);
+void print_triangle(const geometry::triangle &t);
+void check_t_intersections(std::list <geometry::triangle> &l_t, std::vector <bool> &is_t_intersects);
+int triangle_side_by_plane(const geometry::triangle &t, const geometry::plane &pl);
+bool check_intersection(const geometry::triangle &t, const geometry::plane &pl, const geometry::triangle &t1);
+bool check_t_on_match_pl(const geometry::plane &pl, const geometry::triangle &t1, const geometry::triangle &t2);
+bool check_t_intersection_2d(const geometry::triangle_2d &t1, const geometry::triangle_2d &t2);
+bool check_t_and_c_intersection_2d(const geometry::triangle_2d &t, const geometry::cut_2d &c);
+bool check_common_way_intersection(const geometry::triangle &t, const geometry::plane &pl, const geometry::triangle &t1);
+bool check_cut_and_triangle_intersection_on_place(const geometry::triangle &t, const geometry::plane &pl, const geometry::cut &c);
 
 void test_triangle_and_plane() {
     std::cout << "Input points:\n";
-    triangle t = input_triangle(0);
-    plane pl = t.make_plane();
+    geometry::triangle t = input_triangle(0);
+    geometry::plane pl = t.make_plane();
     std::cout << "Plane: " << pl.a << " * x + " << pl.b << " * y + " << pl.c << " * z + " << pl.d << "\n";
     std::cout << "Point: ";
-    point p;
-    std::cin >> p.x >> p.y >> p.z;
+    double x, y, z;
+    std::cin >> x >> y >> z;
+    geometry::point p(x, y, z);
     std::cout << pl.point_side_plane(p) << "\n";
 }
 
-int small_test(std::list <triangle> *l_t) {
-    vec v1, v2, v3;
-    point p;
-    v1.x = 1;
-    v1.y = 1;
-    v1.z = 1;
-    v2.x = 10;
-    v2.y = -10;
-    v2.z = 10;
-    v3.x = -0.01;
-    v3.y = 1.1;
-    v3.z = 0.245;
-    p.x = p.y = p.z = 0;
+int small_test(std::list <geometry::triangle> *l_t) {
+    geometry::vec v1(1, 1, 1);
+    geometry::vec v2(10, -10, 10);
+    geometry::vec v3(-0.01, 1.1, 0.245);
+    geometry::point p(0, 0, 0);
     make_octahedron(l_t, v1, v2, v3, p);
     return 8;
 }
 
-triangle input_triangle(int n) {
-    point p1, p2, p3;
-    std::cin >> p1.x >> p1.y >> p1.z;
-    std::cin >> p2.x >> p2.y >> p2.z;
-    std::cin >> p3.x >> p3.y >> p3.z;
-    triangle t(p1, p2, p3, n);
+geometry::triangle input_triangle(int n) {
+    double x, y, z;
+    std::cin >> x >> y >> z;
+    geometry::point p1(x, y, z);
+    std::cin >> x >> y >> z;
+    geometry::point p2(x, y, z);
+    std::cin >> x >> y >> z;
+    geometry::point p3(x, y, z);
+    geometry::triangle t(p1, p2, p3, n);
     return t;
 }
 
-void print_triangle(triangle &t) {
-    point p;
-    p = t.p1_ret();
+void print_triangle(const geometry::triangle &t) {
+    geometry::point p = t.p1_ret();
     std::cout << p.x << " " << p.y << " " << p.z << "\n";
     p = t.p2_ret();
     std::cout << p.x << " " << p.y << " " << p.z << "\n";
@@ -67,14 +63,12 @@ void print_triangle(triangle &t) {
 
 int main() {
     int n;
-    bool *is_t_intersects;
-    std::list <triangle> l_t;
+    std::vector <bool> is_t_intersects;
+    std::list <geometry::triangle> l_t;
     std::cin >> n;
     //n = small_test(&l_t);
-    is_t_intersects = new bool[n];
-    assert(is_t_intersects != nullptr);
     for(int i = 0; i < n; i++) {
-        is_t_intersects[i] = false;
+        is_t_intersects.push_back(false);
     }
 
     for(int i = 0; i < n; i++) {
@@ -85,23 +79,21 @@ int main() {
     check_t_intersections(l_t, is_t_intersects);
 
     for(int i = 0; i < n; i++) {
-        if(is_t_intersects[i] == true) {
+        if(is_t_intersects[(size_t) i] == true) {
             std::cout << i << "\n";
         }
     }
-    delete [] is_t_intersects;
     return 0;
 }
 
-void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects) {
-    assert(is_t_intersects != nullptr);
+void check_t_intersections(std::list <geometry::triangle> &l_t, std::vector <bool> &is_t_intersects) {
     assert(l_t.size() > 0);
-    triangle t = l_t.front();
+    geometry::triangle t = l_t.front();
     l_t.pop_front();
     if(l_t.size() > 0) {
-        std::list <triangle> l_t1;
-        std::list <triangle> l_t2;
-        plane pl = t.make_plane();
+        std::list <geometry::triangle> l_t1;
+        std::list <geometry::triangle> l_t2;
+        geometry::plane pl = t.make_plane();
         int ind;
         while(l_t.size() > 0) {
             ind = triangle_side_by_plane(l_t.front(), pl);
@@ -116,11 +108,11 @@ void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects) {
             if(ind == 0) {
                 l_t1.push_front(l_t.front());
                 l_t2.push_front(l_t.front());
-                if(((is_t_intersects[t.num()] == false) ||
-                  (is_t_intersects[l_t.front().num()] == false)) &&
+                if(((is_t_intersects[(size_t) t.num()] == false) ||
+                  (is_t_intersects[(size_t) l_t.front().num()] == false)) &&
                   (check_intersection(t, pl, l_t.front()))) {
-                    is_t_intersects[t.num()] = true;
-                    is_t_intersects[l_t.front().num()] = true;
+                    is_t_intersects[(size_t) t.num()] = true;
+                    is_t_intersects[(size_t) l_t.front().num()] = true;
                 }
             }
             l_t.pop_front();
@@ -134,10 +126,9 @@ void check_t_intersections(std::list <triangle> &l_t, bool *is_t_intersects) {
     }
 }
 
-int triangle_side_by_plane(triangle &t, plane &pl) {
+int triangle_side_by_plane(const geometry::triangle &t, const geometry::plane &pl) {
     double i1, i2, i3;
-    point p;
-    p = t.p1_ret();
+    geometry::point p = t.p1_ret();
     i1 = pl.point_side_plane(p);
     p = t.p2_ret();
     i2 = pl.point_side_plane(p);
@@ -152,195 +143,152 @@ int triangle_side_by_plane(triangle &t, plane &pl) {
     return 0;
 }
 
-bool check_intersection(triangle &t, plane &pl, triangle &t1) {
-    plane pl1 = t1.make_plane();
-    g_obj_pos p_pos = planes_pos(pl, pl1);
-    if(p_pos == PARALLEL) {
+bool check_intersection(const geometry::triangle &t, const geometry::plane &pl, const geometry::triangle &t1) {
+    geometry::plane pl1 = t1.make_plane();
+    geometry::g_obj_pos p_pos = planes_pos(pl, pl1);
+    if(p_pos == geometry::PARALLEL) {
         return false;
     }
-    if(p_pos == MATCH) {
+    if(p_pos == geometry::MATCH) {
         return check_t_on_match_pl(pl, t, t1);
     }
-    if(p_pos == COMMON) {
+    if(p_pos == geometry::COMMON) {
         return check_common_way_intersection(t, pl, t1);
     }
     assert(1);
     return false;
 }
 
-bool check_t_on_match_pl(plane &pl, triangle &t1, triangle &t2) {
-    point_2d p1_2d, p2_2d, p3_2d;
+bool check_t_on_match_pl(const geometry::plane &pl, const geometry::triangle &t1, const geometry::triangle &t2) {
     //moving to 2d with checking case if pl is parallel to coordinate plane
     if((abs(pl.a) <= abs(pl.c)) && (abs(pl.b) <= abs(pl.c))) {
-        p1_2d.x = t1.p1_ret().x;
-        p1_2d.y = t1.p1_ret().y;
-        p2_2d.x = t1.p2_ret().x;
-        p2_2d.y = t1.p2_ret().y;
-        p3_2d.x = t1.p3_ret().x;
-        p3_2d.y = t1.p3_ret().y;
-        triangle_2d t1_2d(p1_2d, p2_2d, p3_2d);
-        p1_2d.x = t2.p1_ret().x;
-        p1_2d.y = t2.p1_ret().y;
-        p2_2d.x = t2.p2_ret().x;
-        p2_2d.y = t2.p2_ret().y;
-        p3_2d.x = t2.p3_ret().x;
-        p3_2d.y = t2.p3_ret().y;
-        triangle_2d t2_2d(p1_2d, p2_2d, p3_2d);
+        geometry::point_2d p1_2d(t1.p1_ret().x, t1.p1_ret().y);
+        geometry::point_2d p2_2d(t1.p2_ret().x, t1.p2_ret().y);
+        geometry::point_2d p3_2d(t1.p3_ret().x, t1.p3_ret().y);
+        geometry::triangle_2d t1_2d(p1_2d, p2_2d, p3_2d);
+        p1_2d = geometry::point_2d(t2.p1_ret().x, t2.p1_ret().y);
+        p2_2d = geometry::point_2d(t2.p2_ret().x, t2.p2_ret().y);
+        p3_2d = geometry::point_2d(t2.p3_ret().x, t2.p3_ret().y);
+        geometry::triangle_2d t2_2d(p1_2d, p2_2d, p3_2d);
         return check_t_intersection_2d(t1_2d, t2_2d);
     }
     else if((abs(pl.a) <= abs(pl.b)) && (abs(pl.c) <= abs(pl.b))) {
-        p1_2d.x = t1.p1_ret().x;
-        p1_2d.y = t1.p1_ret().z;
-        p2_2d.x = t1.p2_ret().x;
-        p2_2d.y = t1.p2_ret().z;
-        p3_2d.x = t1.p3_ret().x;
-        p3_2d.y = t1.p3_ret().z;
-        triangle_2d t1_2d(p1_2d, p2_2d, p3_2d);
-        p1_2d.x = t2.p1_ret().x;
-        p1_2d.y = t2.p1_ret().z;
-        p2_2d.x = t2.p2_ret().x;
-        p2_2d.y = t2.p2_ret().z;
-        p3_2d.x = t2.p3_ret().x;
-        p3_2d.y = t2.p3_ret().z;
-        triangle_2d t2_2d(p1_2d, p2_2d, p3_2d);
+        geometry::point_2d p1_2d(t1.p1_ret().x, t1.p1_ret().z);
+        geometry::point_2d p2_2d(t1.p2_ret().x, t1.p2_ret().z);
+        geometry::point_2d p3_2d(t1.p3_ret().x, t1.p3_ret().z);
+        geometry::triangle_2d t1_2d(p1_2d, p2_2d, p3_2d);
+        p1_2d = geometry::point_2d(t2.p1_ret().x, t2.p1_ret().z);
+        p2_2d = geometry::point_2d(t2.p2_ret().x, t2.p2_ret().z);
+        p3_2d = geometry::point_2d(t2.p3_ret().x, t2.p3_ret().z);
+        geometry::triangle_2d t2_2d(p1_2d, p2_2d, p3_2d);
         return check_t_intersection_2d(t1_2d, t2_2d);
     }
     else {
-        p1_2d.x = t1.p1_ret().y;
-        p1_2d.y = t1.p1_ret().z;
-        p2_2d.x = t1.p2_ret().y;
-        p2_2d.y = t1.p2_ret().z;
-        p3_2d.x = t1.p3_ret().y;
-        p3_2d.y = t1.p3_ret().z;
-        triangle_2d t1_2d(p1_2d, p2_2d, p3_2d);
-        p1_2d.x = t2.p1_ret().y;
-        p1_2d.y = t2.p1_ret().z;
-        p2_2d.x = t2.p2_ret().y;
-        p2_2d.y = t2.p2_ret().z;
-        p3_2d.x = t2.p3_ret().y;
-        p3_2d.y = t2.p3_ret().z;
-        triangle_2d t2_2d(p1_2d, p2_2d, p3_2d);
+        geometry::point_2d p1_2d(t1.p1_ret().y, t1.p1_ret().z);
+        geometry::point_2d p2_2d(t1.p2_ret().y, t1.p2_ret().z);
+        geometry::point_2d p3_2d(t1.p3_ret().y, t1.p3_ret().z);
+        geometry::triangle_2d t1_2d(p1_2d, p2_2d, p3_2d);
+        p1_2d = geometry::point_2d(t2.p1_ret().y, t2.p1_ret().z);
+        p2_2d = geometry::point_2d(t2.p2_ret().y, t2.p2_ret().z);
+        p3_2d = geometry::point_2d(t2.p3_ret().y, t2.p3_ret().z);
+        geometry::triangle_2d t2_2d(p1_2d, p2_2d, p3_2d);
         return check_t_intersection_2d(t1_2d, t2_2d);
     }
 }
 
-bool check_common_way_intersection(triangle &t, plane &pl, triangle &t1) {
-    point p1, p2, p[2];
-    int i;
-    g_obj_pos c1_ind, c2_ind, c3_ind;
+bool check_common_way_intersection(const geometry::triangle &t, const geometry::plane &pl, const geometry::triangle &t1) {
+    std::vector <geometry::point> arr_p;
+    geometry::g_obj_pos c1_ind, c2_ind, c3_ind;
 
-    p1 = t1.p1_ret();
-    p2 = t1.p2_ret();
-    cut c1(p1, p2);
+    geometry::point p1 = t1.p1_ret();
+    geometry::point p2 = t1.p2_ret();
+    geometry::cut c1(p1, p2);
     p1 = t1.p1_ret();
     p2 = t1.p3_ret();
-    cut c2(p1, p2);
+    geometry::cut c2(p1, p2);
     p1 = t1.p2_ret();
     p2 = t1.p3_ret();
-    cut c3(p1, p2);
+    geometry::cut c3(p1, p2);
 
     c1_ind = cut_and_plane_pos(pl, c1);
     c2_ind = cut_and_plane_pos(pl, c2);
     c3_ind = cut_and_plane_pos(pl, c3);
     //cases if some t1 cut lies on pl
-    if(c1_ind == MATCH) {
+    if(c1_ind == geometry::MATCH) {
         return check_cut_and_triangle_intersection_on_place(t, pl, c1);
     }
-    if(c2_ind == MATCH) {
+    if(c2_ind == geometry::MATCH) {
         return check_cut_and_triangle_intersection_on_place(t, pl, c2);
     }
-    if(c3_ind == MATCH) {
+    if(c3_ind == geometry::MATCH) {
         return check_cut_and_triangle_intersection_on_place(t, pl, c3);
     }
 
     //common way: searching two points which t1 cuts intersect pl
-    i = 0;
     p1 = t1.p1_ret();
     p2 = t1.p2_ret();
-    if((c1_ind == COMMON) && (pl.point_side_plane(p1) * pl.point_side_plane(p2) <= 0)) {
-        p[i] = intersection_pc(pl, c1);
-        i++;
+    if((c1_ind == geometry::COMMON) && (pl.point_side_plane(p1) * pl.point_side_plane(p2) <= 0)) {
+        arr_p.push_back(intersection_pc(pl, c1));
     }
     p1 = t1.p1_ret();
     p2 = t1.p3_ret();
-    if((c2_ind == COMMON) && (pl.point_side_plane(p1) * pl.point_side_plane(p2) <= 0)) {
-        p[i] = intersection_pc(pl, c2);
-        i++;
+    if((c2_ind == geometry::COMMON) && (pl.point_side_plane(p1) * pl.point_side_plane(p2) <= 0)) {
+        arr_p.push_back(intersection_pc(pl, c2));
     }
     p1 = t1.p2_ret();
     p2 = t1.p3_ret();
-    if((i < 2) && (c3_ind == COMMON) && (pl.point_side_plane(p1) * pl.point_side_plane(p2) <= 0)) {
-        p[i] = intersection_pc(pl, c3);
-        i++;
+    if((arr_p.size() < 2) && (c3_ind == geometry::COMMON) && (pl.point_side_plane(p1) * pl.point_side_plane(p2) <= 0)) {
+        arr_p.push_back(intersection_pc(pl, c3));
     }
-    assert(i == 2);
+    assert(arr_p.size() == 2);
 
     //case if triangle corner lies on pl
-    if(is_points_match(p[0], p[1])) {
-        return t.is_in_triangle(p[0]);
+    if(is_points_match(arr_p[0], arr_p[1])) {
+        return t.is_in_triangle(arr_p[0]);
     }
 
-    cut c(p[0], p[1]);
+    geometry::cut c(arr_p[0], arr_p[1]);
     return check_cut_and_triangle_intersection_on_place(t, pl, c);
 }
 
-bool check_cut_and_triangle_intersection_on_place(triangle &t, plane &pl, cut &c) {
-    point_2d p1_2d, p2_2d, p3_2d;
-    vec_2d v_2d;
+bool check_cut_and_triangle_intersection_on_place(const geometry::triangle &t, const geometry::plane &pl, const geometry::cut &c) {
     //moving to 2d with checking case if pl is parallel to coordinate plane
     //c lies on pl certainly
     if((abs(pl.a) <= abs(pl.c)) && (abs(pl.b) <= abs(pl.c))) {
-        p1_2d.x = t.p1_ret().x;
-        p1_2d.y = t.p1_ret().y;
-        p2_2d.x = t.p2_ret().x;
-        p2_2d.y = t.p2_ret().y;
-        p3_2d.x = t.p3_ret().x;
-        p3_2d.y = t.p3_ret().y;
-        triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
-        p1_2d.x = c.p.x;
-        p1_2d.y = c.p.y;
-        v_2d.x = c.v.x;
-        v_2d.y = c.v.y;
-        cut_2d c_2d(p1_2d, v_2d);
+        geometry::point_2d p1_2d(t.p1_ret().x, t.p1_ret().y);
+        geometry::point_2d p2_2d(t.p2_ret().x, t.p2_ret().y);
+        geometry::point_2d p3_2d(t.p3_ret().x, t.p3_ret().y);
+        geometry::triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
+        geometry::vec_2d v_2d(c.v.x, c.v.y);
+        p1_2d = geometry::point_2d(c.p.x, c.p.y);
+        geometry::cut_2d c_2d(p1_2d, v_2d);
         return check_t_and_c_intersection_2d(t_2d, c_2d);
     }
     else if((abs(pl.a) <= abs(pl.b)) && (abs(pl.c) <= abs(pl.b))) {
-        p1_2d.x = t.p1_ret().x;
-        p1_2d.y = t.p1_ret().z;
-        p2_2d.x = t.p2_ret().x;
-        p2_2d.y = t.p2_ret().z;
-        p3_2d.x = t.p3_ret().x;
-        p3_2d.y = t.p3_ret().z;
-        triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
-        p1_2d.x = c.p.x;
-        p1_2d.y = c.p.z;
-        v_2d.x = c.v.x;
-        v_2d.y =c.v.z;
-        cut_2d c_2d(p1_2d, v_2d);
+        geometry::point_2d p1_2d(t.p1_ret().x, t.p1_ret().z);
+        geometry::point_2d p2_2d(t.p2_ret().x, t.p2_ret().z);
+        geometry::point_2d p3_2d(t.p3_ret().x, t.p3_ret().z);
+        geometry::triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
+        geometry::vec_2d v_2d(c.v.x, c.v.z);
+        p1_2d = geometry::point_2d(c.p.x, c.p.z);
+        geometry::cut_2d c_2d(p1_2d, v_2d);
         return check_t_and_c_intersection_2d(t_2d, c_2d);
     }
     else {
-        p1_2d.x = t.p1_ret().y;
-        p1_2d.y = t.p1_ret().z;
-        p2_2d.x = t.p2_ret().y;
-        p2_2d.y = t.p2_ret().z;
-        p3_2d.x = t.p3_ret().y;
-        p3_2d.y = t.p3_ret().z;
-        triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
-        p1_2d.x = c.p.y;
-        p1_2d.y = c.p.z;
-        v_2d.x = c.v.y;
-        v_2d.y =c.v.z;
-        cut_2d c_2d(p1_2d, v_2d);
+        geometry::point_2d p1_2d(t.p1_ret().y, t.p1_ret().z);
+        geometry::point_2d p2_2d(t.p2_ret().y, t.p2_ret().z);
+        geometry::point_2d p3_2d(t.p3_ret().y, t.p3_ret().z);
+        geometry::triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
+        geometry::vec_2d v_2d(c.v.y, c.v.z);
+        p1_2d = geometry::point_2d(c.p.y, c.p.z);
+        geometry::cut_2d c_2d(p1_2d, v_2d);
         return check_t_and_c_intersection_2d(t_2d, c_2d);
     }
 }
 
-bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2) {
-    point_2d p1, p2;
-
+bool check_t_intersection_2d(const geometry::triangle_2d &t1, const geometry::triangle_2d &t2) {
     //checking case if triangle corners lie into other triangle
-    p1 = t2.p1_ret();
+    geometry::point_2d p1 = t2.p1_ret();
     if(t1.is_in_triangle(p1)) return true;
     p1 = t2.p2_ret();
     if(t1.is_in_triangle(p1)) return true;
@@ -356,32 +304,32 @@ bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2) {
 
     //searching for cuts intersection
     p1 = t1.p1_ret();
-    p2 = t1.p2_ret();
-    cut_2d c11(p1, p2); // why cut_2d c11(t1.p1_ret(), t1.p2_ret()); not works?
+    geometry::point_2d p2 = t1.p2_ret();
+    geometry::cut_2d c11(p1, p2); // why cut_2d c11(t1.p1_ret(), t1.p2_ret()); not works?
     p1 = t1.p1_ret();
     p2 = t1.p3_ret();
-    cut_2d c12(p1, p2);
+    geometry::cut_2d c12(p1, p2);
     p1 = t1.p2_ret();
     p2 = t1.p3_ret();
-    cut_2d c13(p1, p2);
+    geometry::cut_2d c13(p1, p2);
 
     p1 = t2.p1_ret();
     p2 = t2.p2_ret();
-    cut_2d c21(p1, p2);
+    geometry::cut_2d c21(p1, p2);
     if(is_cut_2d_intersects(c11, c21)) return true;
     if(is_cut_2d_intersects(c12, c21)) return true;
     if(is_cut_2d_intersects(c13, c21)) return true;
 
     p1 = t2.p1_ret();
     p2 = t2.p3_ret();
-    cut_2d c22(p1, p2);
+    geometry::cut_2d c22(p1, p2);
     if(is_cut_2d_intersects(c11, c22)) return true;
     if(is_cut_2d_intersects(c12, c22)) return true;
     if(is_cut_2d_intersects(c13, c22)) return true;
 
     p1 = t2.p2_ret();
     p2 = t2.p3_ret();
-    cut_2d c23(p1, p2);
+    geometry::cut_2d c23(p1, p2);
     if(is_cut_2d_intersects(c11, c23)) return true;
     if(is_cut_2d_intersects(c12, c23)) return true;
     if(is_cut_2d_intersects(c13, c23)) return true; //it is excess
@@ -389,10 +337,9 @@ bool check_t_intersection_2d(triangle_2d &t1, triangle_2d &t2) {
     return false;
 }
 
-bool check_t_and_c_intersection_2d(triangle_2d &t, cut_2d &c) {
-    point_2d p1, p2;
+bool check_t_and_c_intersection_2d(const geometry::triangle_2d &t, const geometry::cut_2d &c) {
     //check points lie into triangle
-    p1 = c.p;
+    geometry::point_2d p1 = c.p;
     if(t.is_in_triangle(p1)) {
         return true;
     }
@@ -404,16 +351,16 @@ bool check_t_and_c_intersection_2d(triangle_2d &t, cut_2d &c) {
 
     //searching for cuts intersection
     p1 = t.p1_ret();
-    p2 = t.p2_ret();
-    cut_2d c_t1(p1, p2);
+    geometry::point_2d p2 = t.p2_ret();
+    geometry::cut_2d c_t1(p1, p2);
     if(is_cut_2d_intersects(c, c_t1)) return true;
     p1 = t.p1_ret();
     p2 = t.p3_ret();
-    cut_2d c_t2(p1, p2);
+    geometry::cut_2d c_t2(p1, p2);
     if(is_cut_2d_intersects(c, c_t2)) return true;
     p1 = t.p2_ret();
     p2 = t.p3_ret();
-    cut_2d c_t3(p1, p2);
+    geometry::cut_2d c_t3(p1, p2);
     if(is_cut_2d_intersects(c, c_t3)) return true; //excess
     return false;
 }

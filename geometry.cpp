@@ -3,11 +3,14 @@
 
 #include "geometry.h"
 
+
 namespace  {
     const double DOUBLE_GAP = 0.000001;
 }
 
-bool is_real_point(point &p) {
+namespace geometry {
+
+bool is_real_point(const point &p) {
     if((std::isinf(p.x)) || (std::isnan(p.x))) {
         return false;
     }
@@ -20,7 +23,7 @@ bool is_real_point(point &p) {
     return true;
 }
 
-bool is_points_match(point &p1, point &p2) {
+bool is_points_match(const point &p1, const point &p2) {
     if((fabs(p1.x - p2.x) > DOUBLE_GAP) ||
        (fabs(p1.y - p2.y) > DOUBLE_GAP) ||
        (fabs(p1.z - p2.z) > DOUBLE_GAP)) {
@@ -29,64 +32,41 @@ bool is_points_match(point &p1, point &p2) {
     return true;
 }
 
-vec vec_on_2p(point &p1, point &p2) {
-    vec v;
-    v.x = p2.x - p1.x;
-    v.y = p2.y - p1.y;
-    v.z = p2.z - p1.z;
+vec mult_vec(const vec &v1, const vec &v2) {
+    double a, b, c;
+    a = v1.y * v2.z - v1.z * v2.y;
+    b = v1.z * v2.x - v1.x * v2.z;
+    c = v1.x * v2.y - v1.y * v2.x;
+    vec v(a, b, c);
     return v;
 }
 
-vec_2d vec_on_2p_2d(point_2d &p1, point_2d &p2) {
-    vec_2d v;
-    v.x = p2.x - p1.x;
-    v.y = p2.y - p1.y;
-    return v;
-}
-
-vec vec_on_2p_2d_to_3d(point_2d &p1, point_2d &p2) {
-    vec v;
-    v.x = p2.x - p1.x;
-    v.y = p2.y - p1.y;
-    v.z = 0;
-    return v;
-}
-
-vec mult_vec(vec &v1, vec &v2) {
-    vec v;
-    v.x = v1.y * v2.z - v1.z * v2.y;
-    v.y = v1.z * v2.x - v1.x * v2.z;
-    v.z = v1.x * v2.y - v1.y * v2.x;
-    return v;
-}
-
-point intersection_pc(plane &pl, cut &c) {
-    double k, t;
-    point p;
+point intersection_pc(const plane &pl, const cut &c) {
+    double k, t, x, y, z;
     //pl and c not parallel certainly before this function
     k = pl.a * c.v.x + pl.b * c.v.y + pl.c * c.v.z;
     t = pl.a * c.p.x + pl.b * c.p.y + pl.c * c.p.z + pl.d;
     t = (-1) * t / k;
-    p.x = c.p.x + t * c.v.x;
-    p.y = c.p.y + t * c.v.y;
-    p.z = c.p.z + t * c.v.z;
+    x = c.p.x + t * c.v.x;
+    y = c.p.y + t * c.v.y;
+    z = c.p.z + t * c.v.z;
+    point p(x, y, z);
     return p;
 }
 
-bool triangle::is_in_triangle(point &p) {
+bool triangle::is_in_triangle(const point &p) const {
     if(is_real_point(p) == false) {
         return false;
     }
-    vec v1, v2, a1, a2, a3;
-    v1 = vec_on_2p(p1, p2);
-    v2 = vec_on_2p(p1, p);
-    a1 = mult_vec(v1, v2);
-    v1 = vec_on_2p(p2, p3);
-    v2 = vec_on_2p(p2, p);
-    a2 = mult_vec(v1, v2);
-    v1 = vec_on_2p(p3, p1);
-    v2 = vec_on_2p(p3, p);
-    a3 = mult_vec(v1, v2);
+    vec v1(p1, p2);
+    vec v2(p1, p);
+    vec a1 = mult_vec(v1, v2);
+    v1 = vec(p2, p3);
+    v2 = vec(p2, p);
+    vec a2 = mult_vec(v1, v2);
+    v1 = vec(p3, p1);
+    v2 = vec(p3, p);
+    vec a3 = mult_vec(v1, v2);
     bool ind = true;
     if(a1.x * a2.x < 0) {
         ind = false;
@@ -109,17 +89,16 @@ bool triangle::is_in_triangle(point &p) {
     return ind;
 }
 
-bool triangle_2d::is_in_triangle(point_2d &p) {
-    vec v1, v2, a1, a2, a3;
-    v1 = vec_on_2p_2d_to_3d(p1, p2);
-    v2 = vec_on_2p_2d_to_3d(p1, p);
-    a1 = mult_vec(v1, v2);
-    v1 = vec_on_2p_2d_to_3d(p2, p3);
-    v2 = vec_on_2p_2d_to_3d(p2, p);
-    a2 = mult_vec(v1, v2);
-    v1 = vec_on_2p_2d_to_3d(p3, p1);
-    v2 = vec_on_2p_2d_to_3d(p3, p);
-    a3 = mult_vec(v1, v2);
+bool triangle_2d::is_in_triangle(const point_2d &p) const {
+    vec v1(p1, p2);
+    vec v2(p1, p);
+    vec a1 = mult_vec(v1, v2);
+    v1 = vec(p2, p3);
+    v2 = vec(p2, p);
+    vec a2 = mult_vec(v1, v2);
+    v1 = vec(p3, p1);
+    v2 = vec(p3, p);
+    vec a3 = mult_vec(v1, v2);
     bool ind = true;
     if(a1.z * a2.z < 0) {
         ind = false;
@@ -130,7 +109,7 @@ bool triangle_2d::is_in_triangle(point_2d &p) {
     return ind;
 }
 
-g_obj_pos planes_pos(plane &pl1, plane &pl2) {
+g_obj_pos planes_pos(const plane &pl1, const plane &pl2) {
     double n1, n2;
     n1 = sqrt(pl1.a * pl1.a + pl1.b * pl1.b + pl1.c * pl1.c);
     n2 = sqrt(pl2.a * pl2.a + pl2.b * pl2.b + pl2.c * pl2.c);
@@ -147,7 +126,7 @@ g_obj_pos planes_pos(plane &pl1, plane &pl2) {
     return MATCH;
 }
 
-g_obj_pos cut_and_plane_pos(plane &pl, cut &c) {
+g_obj_pos cut_and_plane_pos(const plane &pl, const cut &c) {
     double n;
     n = sqrt(pl.a * pl.a + pl.b * pl.b + pl.c * pl.c);
     assert(n > 0);
@@ -160,7 +139,7 @@ g_obj_pos cut_and_plane_pos(plane &pl, cut &c) {
     return MATCH;
 }
 
-g_obj_pos lines_pos_2d(cut_2d &c1, cut_2d &c2) {
+g_obj_pos lines_pos_2d(const cut_2d &c1, const cut_2d &c2) {
     double n1, n2;
     n1 = sqrt(c1.v.x * c1.v.x + c1.v.y * c1.v.y);
     n2 = sqrt(c2.v.x * c2.v.x + c2.v.y * c2.v.y);
@@ -170,9 +149,7 @@ g_obj_pos lines_pos_2d(cut_2d &c1, cut_2d &c2) {
        (fabs(c1.v.y / n1 - c2.v.y / n2) > DOUBLE_GAP)) {
         return COMMON;
     }
-    vec_2d v;
-    v.x = c2.p.x - c1.p.x;
-    v.y = c2.p.y - c1.p.y;
+    vec_2d v(c2.p.x - c1.p.x, c2.p.y - c1.p.y);
     double vn;
     vn = sqrt(v.x * v.x + v.y * v.y);
     if(vn > 0) {
@@ -189,7 +166,7 @@ g_obj_pos lines_pos_2d(cut_2d &c1, cut_2d &c2) {
     }
 }
 
-bool is_cut_2d_intersects(cut_2d &c1, cut_2d &c2) {
+bool is_cut_2d_intersects(const cut_2d &c1, const cut_2d &c2) {
     g_obj_pos ind;
     ind = lines_pos_2d(c1, c2);
     if(ind == PARALLEL) {
@@ -227,4 +204,5 @@ bool is_cut_2d_intersects(cut_2d &c1, cut_2d &c2) {
     else {
         return false;
     }
+}
 }
