@@ -1,12 +1,14 @@
+//#define NORMAL
+
 #include <iostream>
 #include <list>
 #include <cassert>
 #include <vector>
 
 #include "geometry.h"
+#ifndef NORMAL
 #include "triangle_test.h"
-
-#define NORMAL
+#endif
 
 geometry::triangle input_triangle(int n);
 void print_triangle(const geometry::triangle &t);
@@ -19,18 +21,7 @@ bool check_t_and_c_intersection_2d(const geometry::triangle_2d &t, const geometr
 bool check_common_way_intersection(const geometry::triangle &t, const geometry::plane &pl, const geometry::triangle &t1);
 bool check_cut_and_triangle_intersection_on_place(const geometry::triangle &t, const geometry::plane &pl, const geometry::cut &c);
 
-void test_triangle_and_plane() {
-    std::cout << "Input points:\n";
-    geometry::triangle t = input_triangle(0);
-    geometry::plane pl = t.make_plane();
-    std::cout << "Plane: " << pl.a << " * x + " << pl.b << " * y + " << pl.c << " * z + " << pl.d << "\n";
-    std::cout << "Point: ";
-    double x, y, z;
-    std::cin >> x >> y >> z;
-    geometry::point p(x, y, z);
-    std::cout << pl.point_side_plane(p) << "\n";
-}
-
+#ifdef TEST0
 void test0(std::list <geometry::triangle> *l_t) {
     geometry::vec v1(1, 1, 1);
     geometry::vec v2(10, -10, 10);
@@ -38,7 +29,9 @@ void test0(std::list <geometry::triangle> *l_t) {
     geometry::point p(0, 0, 0);
     make_octahedron(l_t, v1, v2, v3, p);
 }
+#endif
 
+#ifdef TEST1
 void test1(std::list <geometry::triangle> *l_t) {
     geometry::point p1(0, 0, 0);
     geometry::point p2(10, 0, 0);
@@ -46,7 +39,9 @@ void test1(std::list <geometry::triangle> *l_t) {
     geometry::triangle t(p1, p2, p3, 0);
     make_triangle_stack(l_t, t, 0.01, 1);
 }
+#endif
 
+#ifdef TEST2
 void test2(std::list <geometry::triangle> *l_t) {
     geometry::point p1(0, 0, 0);
     geometry::point p2(10, 0, 0);
@@ -59,7 +54,9 @@ void test2(std::list <geometry::triangle> *l_t) {
     t = geometry::triangle(p1, p2, p3, (int) l_t->size());
     l_t->push_back(t);
 }
+#endif
 
+#ifdef TEST3
 void test3(std::list <geometry::triangle> *l_t) {
     geometry::point p1(0, 0, 0);
     geometry::point p2(10, 0, 0);
@@ -77,7 +74,9 @@ void test3(std::list <geometry::triangle> *l_t) {
     t = geometry::triangle(p1, p2, p3, (int) l_t->size());
     l_t->push_back(t);
 }
+#endif
 
+#ifdef TEST4
 void test4(std::list <geometry::triangle> *l_t) {
     geometry::point p1(0, 0, 0);
     geometry::point p2(10, 0, 0);
@@ -90,7 +89,9 @@ void test4(std::list <geometry::triangle> *l_t) {
     t = geometry::triangle(p1, p2, p3, 0);
     make_triangle_stack(l_t, t, 0.05, -1);
 }
+#endif
 
+#ifdef TEST5
 void test5(std::list <geometry::triangle> *l_t) {
     geometry::point p1(0, 0, 0);
     geometry::point p2(10, 0, 0);
@@ -103,9 +104,9 @@ void test5(std::list <geometry::triangle> *l_t) {
     t = geometry::triangle(p1, p2, p3, 0);
     make_triangle_stack(l_t, t, 0.01, -1);
 }
+#endif
 
-
-
+#ifdef NORMAL
 geometry::triangle input_triangle(int n) {
     double x, y, z;
     std::cin >> x >> y >> z;
@@ -117,6 +118,7 @@ geometry::triangle input_triangle(int n) {
     geometry::triangle t(p1, p2, p3, n);
     return t;
 }
+#endif
 
 void print_triangle(const geometry::triangle &t) {
     geometry::point p = t.p1_ret();
@@ -158,8 +160,8 @@ int main() {
     for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
     }
-#endif
     assert((int) l_t.size() == n);
+#endif
 
     n = (int) l_t.size();
     for(int i = 0; i < n; i++) {
