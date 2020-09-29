@@ -6,6 +6,8 @@
 #include "geometry.h"
 #include "triangle_test.h"
 
+#define NORMAL
+
 geometry::triangle input_triangle(int n);
 void print_triangle(const geometry::triangle &t);
 void check_t_intersections(std::list <geometry::triangle> &l_t, std::vector <bool> &is_t_intersects);
@@ -29,7 +31,7 @@ void test_triangle_and_plane() {
     std::cout << pl.point_side_plane(p) << "\n";
 }
 
-void small_test(std::list <geometry::triangle> *l_t) {
+void test0(std::list <geometry::triangle> *l_t) {
     geometry::vec v1(1, 1, 1);
     geometry::vec v2(10, -10, 10);
     geometry::vec v3(-0.01, 1.1, 0.245);
@@ -131,17 +133,32 @@ int main() {
     int n;
     std::vector <bool> is_t_intersects;
     std::list <geometry::triangle> l_t;
+#ifdef NORMAL
     std::cin >> n;
-    //small_test(&l_t);
-    //test1(&l_t);
-    //test2(&l_t);
-    //test3(&l_t);
-    //test4(&l_t);
-    //test5(&l_t);
-
+#endif
+#ifdef TEST0
+    test0(&l_t);
+#endif
+#ifdef TEST1
+    test1(&l_t);
+#endif
+#ifdef TEST2
+    test2(&l_t);
+#endif
+#ifdef TEST3
+    test3(&l_t);
+#endif
+#ifdef TEST4
+    test4(&l_t);
+#endif
+#ifdef TEST5
+    test5(&l_t);
+#endif
+#ifdef NORMAL
     for(int i = 0; i < n; i++) {
         l_t.push_back(input_triangle(i));
     }
+#endif
     assert((int) l_t.size() == n);
 
     n = (int) l_t.size();
