@@ -13,94 +13,6 @@
 geometry::geometry_object input_geometry_object(int n);
 void print_triangle(const geometry::triangle &t);
 
-#ifdef TEST0
-void test0(std::list <geometry::geometry_object> *l_t) {
-    geometry::vec v1(1, 1, 1);
-    geometry::vec v2(10, -10, 10);
-    geometry::vec v3(-0.01, 1.1, 0.245);
-    geometry::point p(0, 0, 0);
-    make_octahedron(l_t, v1, v2, v3, p);
-}
-#endif
-
-#ifdef TEST1
-void test1(std::list <geometry::geometry_object> *l_t) {
-    geometry::point p1(0, 0, 0);
-    geometry::point p2(10, 0, 0);
-    geometry::point p3(0, 10, 0);
-    geometry::triangle t(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.01, 1);
-}
-#endif
-
-#ifdef TEST2
-void test2(std::list <geometry::geometry_object> *l_t) {
-    geometry::point p1(0, 0, 0);
-    geometry::point p2(10, 0, 0);
-    geometry::point p3(0, 10, 0);
-    geometry::triangle t(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.01, 1);
-    p1 = geometry::point(1, 1, 0);
-    p2 = geometry::point(1, 2, 0);
-    p3 = geometry::point(1, 1, 0.03);
-    t = geometry::triangle(p1, p2, p3);
-    geometry::geometry_object o(geometry::TRIANGLE, t, (int) l_t.size());
-    l_t->push_back(o);
-}
-#endif
-
-#ifdef TEST3
-void test3(std::list <geometry::geometry_object> *l_t) {
-    geometry::point p1(0, 0, 0);
-    geometry::point p2(10, 0, 0);
-    geometry::point p3(0, 10, 0);
-    geometry::triangle t(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.01, 1);
-    p1 = geometry::point(1, 1, 0);
-    p2 = geometry::point(1, 2, 0);
-    p3 = geometry::point(1, 1, 0.03);
-    t = geometry::triangle(p1, p2, p3);
-    geometry::geometry_object o(geometry::TRIANGLE, t, (int) l_t.size());
-    l_t->push_back(o);
-    p1 = geometry::point(1, 1, 0.5);
-    p2 = geometry::point(1, 2, 0.45);
-    p3 = geometry::point(1, 1, 0.66);
-    t = geometry::triangle(p1, p2, p3);
-    geometry::geometry_object o(geometry::TRIANGLE, t, (int) l_t.size());
-    l_t->push_back(o);
-}
-#endif
-
-#ifdef TEST4
-void test4(std::list <geometry::geometry_object> *l_t) {
-    geometry::point p1(0, 0, 0);
-    geometry::point p2(10, 0, 0);
-    geometry::point p3(0, 10, 0);
-    geometry::triangle t(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.01, 1);
-    p1 = geometry::point (0, 0, 0);
-    p2 = geometry::point (10, 0, 0);
-    p3 = geometry::point (0, 0, 0.5);
-    t = geometry::triangle(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.05, -1);
-}
-#endif
-
-#ifdef TEST5
-void test5(std::list <geometry::geometry_object> *l_t) {
-    geometry::point p1(0, 0, 0);
-    geometry::point p2(10, 0, 0);
-    geometry::point p3(0, 10, 0);
-    geometry::triangle t(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.01, 1);
-    p1 = geometry::point (0, 0, 0);
-    p2 = geometry::point (10, 0, 0);
-    p3 = geometry::point (0, -10, 0);
-    t = geometry::triangle(p1, p2, p3);
-    make_triangle_stack(l_t, t, 0.01, -1);
-}
-#endif
-
 #ifdef NORMAL
 geometry::geometry_object input_geometry_object(int n) {
     double x, y, z;
@@ -168,6 +80,15 @@ int main() {
 #endif
 #ifdef TEST5
     test5(&l_t);
+#endif
+#ifdef TEST6
+    test6(&l_t);
+#endif
+#ifdef TEST7
+    test7(&l_t);
+#endif
+#ifdef TEST8
+    test8(&l_t);
 #endif
 #ifdef NORMAL
     for(int i = 0; i < n; i++) {
