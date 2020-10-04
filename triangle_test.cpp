@@ -175,7 +175,7 @@ void test3(std::list <geometry_object> *l_t) {
     p2 = point(1, 2, 0.45);
     p3 = point(1, 1, 0.66);
     t = triangle(p1, p2, p3);
-    geometry_object o(geometry::TRIANGLE, t, (int) l_t->size());
+    o = geometry_object(geometry::TRIANGLE, t, (int) l_t->size());
     l_t->push_back(o);
 }
 #endif
@@ -237,12 +237,12 @@ void test7(std::list <geometry_object> *l_t) {
     geometry_object o(geometry::TRIANGLE, t, (int) l_t->size());
     l_t->push_back(o);
     p1 = point (1, 1, 1);
-    geometry_object o(geometry::POINT, p1, (int) l_t->size());
+    o = geometry_object(geometry::POINT, p1, (int) l_t->size());
     l_t->push_back(o);
     p1 = point(0, 0, 0);
     p2 = point(1, 1, 0);
     cut c(p1, p2);
-    geometry_object o(geometry::CUT, c, (int) l_t->size());
+    o = geometry_object(geometry::CUT, c, (int) l_t->size());
     l_t->push_back(o);
 }
 #endif
@@ -256,12 +256,12 @@ void test8(std::list <geometry_object> *l_t) {
     geometry_object o(geometry::TRIANGLE, t, (int) l_t->size());
     l_t->push_back(o);
     p1 = point (1, 1, 1);
-    geometry_object o(geometry::POINT, p1, (int) l_t->size());
+    o = geometry_object(geometry::POINT, p1, (int) l_t->size());
     l_t->push_back(o);
     p1 = point(2, 2, 1);
     p2 = point(0, 0, 1);
     cut c(p1, p2);
-    geometry_object o(geometry::CUT, c, (int) l_t->size());
+    o = geometry_object(geometry::CUT, c, (int) l_t->size());
     l_t->push_back(o);
 }
 #endif
