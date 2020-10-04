@@ -42,6 +42,9 @@ struct vec {
         z = 0;
     }
     vec(double a, double b, double c): x(a), y(b), z(c) {}
+    double length() const {
+        return sqrt(x * x + y * y + z * z);
+    }
 };
 
 struct vec_2d {
@@ -64,6 +67,9 @@ struct cut {
     point p_end() const {
         point p_e(p.x + v.x, p.y + v.y, p.z + v.z);
         return p_e;
+    }
+    double length() const {
+        return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
 };
 
@@ -204,17 +210,19 @@ public:
         return t;
     }
     cut build_cut() const {
-        if(is_points_match(p1, p2)) {
-            cut c(p1, p3);
-            return c;
+        cut c1(p1, p2);
+        cut c2(p1, p3);
+        cut c3(p2, p3);
+        double l1 = c1.length();
+        double l2 = c2.length();
+        double l3 = c3.length();
+        if((l1 >= l2) && (l1 >= l3)) {
+            return c1;
         }
-        if(is_points_match(p1, p3)) {
-            cut c(p1, p2);
-            return c;
+        if((l2 >= l1) && (l2 >= l3)) {
+            return c2;
         }
-        assert(is_points_match(p2, p3));
-        cut c(p1, p2);
-        return c;
+        return c3;
     }
     point build_point() const {
         return p1;

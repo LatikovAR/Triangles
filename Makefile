@@ -15,5 +15,12 @@ test4:
 	$(DEF_T_OPTS) -DTEST4 -o prog
 test5:
 	$(DEF_T_OPTS) -DTEST5 -o prog
+test6:
+	$(DEF_T_OPTS) -DTEST6 -o prog
+test7:
+	$(DEF_T_OPTS) -DTEST7 -o prog
+test8:
+	$(DEF_T_OPTS) -DTEST8 -o prog
+
 
 

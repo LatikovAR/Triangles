@@ -35,8 +35,8 @@ bool is_points_match(const point &p1, const point &p2) {
 bool is_on_one_line(const point &p1, const point &p2, const point &p3) {
     vec v1(p1, p2);
     vec v2(p1, p3);
-    double n1 = sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
-    double n2 = sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+    double n1 = v1.length();
+    double n2 = v2.length();
     assert(n1 > 0);
     assert(n2 > 0);
     v1.x /= n1;
