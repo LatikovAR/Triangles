@@ -1,4 +1,4 @@
-#define NORMAL
+//#define NORMAL
 
 #include <iostream>
 #include <list>
