@@ -223,7 +223,7 @@ void test6(std::list <geometry_object> *l_t) {
     p1 = point(-1, -1, -1);
     p2 = point(-2, -2, -2);
     cut c(p1, p2);
-    geometry_object o(geometry::CUT, c, (int) l_t->size());
+    o = geometry_object(geometry::CUT, c, (int) l_t->size());
     l_t->push_back(o);
 }
 #endif
