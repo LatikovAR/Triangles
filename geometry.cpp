@@ -501,6 +501,14 @@ bool check_intersection(const triangle &t, const plane &pl, const triangle &t1) 
 }
 
 bool check_intersection(const triangle &t, const plane &pl, const cut &c) {
+    g_obj_pos pos = cut_and_plane_pos(pl, c);
+    if(pos == PARALLEL) {
+        return false;
+    }
+    if(pos == MATCH) {
+        return check_cut_and_triangle_intersection_on_place(t, pl, c);
+    }
+    assert(pos == COMMON);
     point p = intersection_pc(pl, c);
     return t.is_in_triangle(p);
 }
