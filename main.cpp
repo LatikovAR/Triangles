@@ -58,7 +58,6 @@ void print_triangle(const geometry::triangle &t) {
 
 int main() {
     int n;
-    std::vector <bool> is_t_intersects;
     std::list <geometry::geometry_object> l_t;
 #ifdef NORMAL
     std::cin >> n;
@@ -98,15 +97,11 @@ int main() {
 #endif
 
     n = (int) l_t.size();
-    for(int i = 0; i < n; i++) {
-        is_t_intersects.push_back(false);
-    }
-    find_intersected_objects(l_t, is_t_intersects);
-
-    for(int i = 0; i < n; i++) {
-        if(is_t_intersects[(size_t) i] == true) {
-            std::cout << i << "\n";
-        }
+    geometry::intersection_finder i_f(n, l_t);
+    i_f.find_intersections();
+    std::vector <int> intersected_o_nums = i_f.intersected_objects_nums();
+    for(int i = 0; i < (int) intersected_o_nums.size(); i++) {
+        std::cout << intersected_o_nums[(size_t) i] << "\n";
     }
     return 0;
 }

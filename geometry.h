@@ -236,11 +236,189 @@ bool check_t_and_c_intersection_2d(const triangle_2d &t, const cut_2d &c);
 bool check_t_intersection_2d(const triangle_2d &t1, const triangle_2d &t2);
 bool check_t_intersection_on_match_pl(const plane &pl, const triangle &t1, const triangle &t2);
 bool check_intersection(const triangle &t, const plane &pl, const triangle &t1);
-void find_intersected_objects(std::list <geometry_object> &l_t, std::vector <bool> &is_t_intersects);
 bool check_intersection(const triangle &t, const plane &pl, const cut &c);
 bool check_intersection(const triangle &t, const point &p);
 bool check_intersection(const cut &c1, const cut &c2);
 bool check_intersection(const cut &c, const point &p);
 bool check_intersection(const point &p1, const point &p2);
+
+class intersection_finder {
+private:
+    int n;
+    std::list <geometry_object> l;
+    std::vector <bool> is_t_intersects;
+
+    void root_triangle_case_check(triangle &t_root, int root_num, plane &pl, geometry_object &o) {
+        if((is_t_intersects[(size_t) root_num] == false) ||
+           (is_t_intersects[(size_t) o.ret_number()] == false)) {
+            if(o.ret_type() == TRIANGLE) {
+                triangle t = o.ret_triangle();
+                if(check_intersection(t_root, pl, t)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+            if(o.ret_type() == CUT) {
+                cut c = o.ret_cut();
+                if(check_intersection(t_root, pl, c)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+            if(o.ret_type() == POINT) {
+                point p = o.ret_point();
+                if(check_intersection(t_root, p)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+        }
+    }
+    void root_cut_case_check(cut &c_root, int root_num, geometry_object &o) {
+        if((is_t_intersects[(size_t) root_num] == false) ||
+           (is_t_intersects[(size_t) o.ret_number()] == false)) {
+            if(o.ret_type() == TRIANGLE) {
+                triangle t = o.ret_triangle();
+                plane pl = t.make_plane();
+                if(check_intersection(t, pl, c_root)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+            if(o.ret_type() == CUT) {
+                cut c = o.ret_cut();
+                if(check_intersection(c_root, c)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+            if(o.ret_type() == POINT) {
+                point p = o.ret_point();
+                if(check_intersection(c_root, p)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+        }
+    }
+    void root_point_case_check(point &p_root, int root_num, geometry_object &o) {
+        if((is_t_intersects[(size_t) root_num] == false) ||
+           (is_t_intersects[(size_t) o.ret_number()] == false)) {
+            if(o.ret_type() == TRIANGLE) {
+                triangle t = o.ret_triangle();
+                if(check_intersection(t, p_root)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+            if(o.ret_type() == CUT) {
+                cut c = o.ret_cut();
+                if(check_intersection(c, p_root)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+            if(o.ret_type() == POINT) {
+                point p = o.ret_point();
+                if(check_intersection(p_root, p)) {
+                    is_t_intersects[(size_t) root_num] = true;
+                    is_t_intersects[(size_t) o.ret_number()] = true;
+                }
+            }
+        }
+    }
+
+
+    std::list <geometry_object> find_intersections_driver() const {
+        return l;
+    }
+    void find_intersections_body(std::list <geometry_object> l_t) {
+        assert(l_t.size() > 0);
+        geometry_object root_object = l_t.front();
+        l_t.pop_front();
+        if(l_t.size() > 0) {
+            if(root_object.ret_type() == TRIANGLE) {
+                triangle t_root = root_object.ret_triangle();
+                plane pl = t_root.make_plane();
+                std::list <geometry_object> l_t_new;
+                std::list <geometry_object> l_t1;
+                std::list <geometry_object> l_t2;
+                while(l_t.size() > 0) {
+                    geometry_object o = l_t.front();
+                    l_t.pop_front();
+                    l_t_new.push_back(o);
+                    int i = geometry_object_side_by_plane(o, pl);
+                    if(i == -1) {
+                        l_t1.push_back(o);
+                    }
+                    if(i == 1) {
+                        l_t2.push_back(o);
+                    }
+                    if(i == 0) {
+                        l_t1.push_back(o);
+                        l_t2.push_back(o);
+                    root_triangle_case_check(t_root, root_object.ret_number(), pl, o);
+                    }
+                }
+                if((l_t1.size() < l_t_new.size()) && (l_t2.size() < l_t_new.size())) {
+                    l_t_new.clear();
+                    find_intersections_body(l_t1);
+                    find_intersections_body(l_t2);
+                }
+                else {
+                    l_t1.clear();
+                    l_t2.clear();
+                    find_intersections_body(l_t_new);
+                }
+            }
+            if(root_object.ret_type() == CUT) {
+                cut c_root = root_object.ret_cut();
+                std::list <geometry_object> l_t_new;
+                while(l_t.size() > 0) {
+                    geometry_object o = l_t.front();
+                    l_t.pop_front();
+                    l_t_new.push_back(o);
+                    root_cut_case_check(c_root, root_object.ret_number(), o);
+                }
+                find_intersections_body(l_t_new);
+            }
+            if(root_object.ret_type() == POINT) {
+                point p_root = root_object.ret_point();
+                std::list <geometry_object> l_t_new;
+                while(l_t.size() > 0) {
+                    geometry_object o = l_t.front();
+                    l_t.pop_front();
+                    l_t_new.push_back(o);
+                    root_point_case_check(p_root, root_object.ret_number(), o);
+                }
+                find_intersections_body(l_t_new);
+            }
+        }
+    }
+public:
+    intersection_finder(int n_t, std::list <geometry_object> &objects): n(n_t), l(objects) {
+        for(int i = 0; i < n; i++) {
+            is_t_intersects.push_back(false);
+        }
+    }
+    intersection_finder(std::list <geometry_object> &objects): l(objects) {
+        n = (int) objects.size();
+        for(int i = 0; i < n; i++) {
+            is_t_intersects.push_back(false);
+        }
+    }
+    void find_intersections(){
+        find_intersections_body(find_intersections_driver());
+    }
+    std::vector <int> intersected_objects_nums() const {
+        std::vector <int> nums;
+        for(int i = 0; i < n; i++) {
+            if(is_t_intersects[(size_t) i] == true) {
+                nums.push_back(i);
+            }
+        }
+        return nums;
+    }
+};
 
 }
