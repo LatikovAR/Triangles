@@ -10,11 +10,11 @@
 #include "triangle_test.h"
 #endif
 
-geometry::geometry_object input_geometry_object(int n);
+geometry::geometry_object input_geometry_object(size_t n);
 void print_triangle(const geometry::triangle &t);
 
 #ifdef NORMAL
-geometry::geometry_object input_geometry_object(int n) {
+geometry::geometry_object input_geometry_object(size_t n) {
     double x, y, z;
     std::cin >> x >> y >> z;
     geometry::point p1(x, y, z);
@@ -57,7 +57,7 @@ void print_triangle(const geometry::triangle &t) {
 }
 
 int main() {
-    int n;
+    size_t n;
     std::list <geometry::geometry_object> l_t;
 #ifdef NORMAL
     std::cin >> n;
@@ -90,16 +90,16 @@ int main() {
     test8(&l_t);
 #endif
 #ifdef NORMAL
-    for(int i = 0; i < n; i++) {
+    for(size_t i = 0; i < n; i++) {
         l_t.push_back(input_geometry_object(i));
     }
-    assert((int) l_t.size() == n);
+    assert(l_t.size() == n);
 #endif
 
-    n = (int) l_t.size();
+    n = l_t.size();
     geometry::intersection_finder i_f(n, l_t);
     i_f.find_intersections();
-    std::vector <int> intersected_o_nums = i_f.intersected_objects_nums();
+    std::vector <size_t> intersected_o_nums = i_f.intersected_objects_nums();
     for(int i = 0; i < (int) intersected_o_nums.size(); i++) {
         std::cout << intersected_o_nums[(size_t) i] << "\n";
     }
