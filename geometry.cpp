@@ -39,12 +39,8 @@ bool is_on_one_line(const point &p1, const point &p2, const point &p3) {
     double n2 = v2.length();
     assert(n1 > 0);
     assert(n2 > 0);
-    v1.x /= n1;
-    v1.y /= n1;
-    v1.z /= n1;
-    v2.x /= n2;
-    v2.y /= n2;
-    v2.z /= n2;
+    v1 /= n1;
+    v2 /= n2;
     if(fabs(fabs(v1.x) - fabs(v2.x)) > DOUBLE_GAP) {
         return false;
     }
@@ -55,6 +51,43 @@ bool is_on_one_line(const point &p1, const point &p2, const point &p3) {
         return false;
     }
     return true;
+}
+
+point& point::operator+=(const vec& v) {
+    x += v.x;
+    y += v.y;
+    z += v.z;
+    return *this;
+}
+
+point operator+(const point& p, const vec& v) {
+    point tmp {p};
+    tmp += v;
+    return tmp;
+}
+
+point operator+(const vec& v, const point& p) {
+    point tmp {p};
+    tmp += v;
+    return tmp;
+}
+
+point_2d& point_2d::operator+=(const vec_2d& v) {
+    x += v.x;
+    y += v.y;
+    return *this;
+}
+
+point_2d operator+(const point_2d& p, const vec_2d& v) {
+    point_2d tmp {p};
+    tmp += v;
+    return tmp;
+}
+
+point_2d operator+(const vec_2d& v, const point_2d& p) {
+    point_2d tmp {p};
+    tmp += v;
+    return tmp;
 }
 
 vec mult_vec(const vec &v1, const vec &v2) {
@@ -319,8 +352,7 @@ bool check_t_and_c_intersection_2d(const triangle_2d &t, const cut_2d &c) {
     if(t.is_in_triangle(p1)) {
         return true;
     }
-    p1.x = c.p.x + c.v.x;
-    p1.y = c.p.y + c.v.y;
+    p1 = c.p_end();
     if(t.is_in_triangle(p1)) {
         return true;
     }

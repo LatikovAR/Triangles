@@ -4,30 +4,36 @@
 #include <list>
 #include <vector>
 #include <cmath>
+#include <utility>
 
 namespace geometry {
 
 enum g_obj_pos {COMMON, PARALLEL, MATCH};
 enum g_obj_type {TRIANGLE, CUT, POINT};
 
-struct point {
+struct vec;
+struct vec_2d;
+
+struct point final {
     double x;
     double y;
     double z;
     point(double a, double b, double c): x(a), y(b), z(c) {}
+    point& operator+=(const vec& v);
 };
 
 bool is_real_point(const point &p);
 bool is_points_match(const point &p1, const point &p2);
 bool is_on_one_line(const point &p1, const point &p2, const point &p3);
 
-struct point_2d {
+struct point_2d final {
     double x;
     double y;
     point_2d(double a, double b): x(a), y(b) {}
+    point_2d& operator+=(const vec_2d& v);
 };
 
-struct vec {
+struct vec final {
     double x;
     double y;
     double z;
@@ -45,9 +51,28 @@ struct vec {
     double length() const {
         return sqrt(x * x + y * y + z * z);
     }
+    vec& operator+=(const vec& v) {
+        x += v.x;
+        y += v.y;
+        z += v.z;
+        return *this;
+    }
+    vec& operator*=(double a) {
+        x *= a;
+        y *= a;
+        z *= a;
+        return *this;
+    }
+    vec& operator/=(double a) {
+        a = 1 / a;
+        return (*this *= a);
+    }
 };
 
-struct vec_2d {
+point operator+(const point& p, const vec& v);
+point operator+(const vec& v, const point& p);
+
+struct vec_2d final {
     double x;
     double y;
     vec_2d(const point_2d &p1, const point_2d &p2) {
@@ -55,35 +80,57 @@ struct vec_2d {
         y = p2.y - p1.y;
     }
     vec_2d(double a, double b): x(a), y(b) {}
+    vec_2d& operator+=(const vec_2d& v) {
+        x += v.x;
+        y += v.y;
+        return *this;
+    }
+    vec_2d& operator*=(double a) {
+        x *= a;
+        y *= a;
+        return *this;
+    }
+    vec_2d& operator/=(double a) {
+        a = 1 / a;
+        return (*this *= a);
+    }
 };
+
+point_2d operator+(const point_2d& p, const vec_2d& v);
+point_2d operator+(const vec_2d& v, const point_2d& p);
 
 vec mult_vec(const vec &v1, const vec &v2);
 
-struct cut {
+struct cut final {
     point p;
     vec v;
     cut(const point &p1, const point &p2): p(p1), v(p1, p2) {}
     cut(const point &p_in, const vec &v_in): p(p_in), v(v_in) {}
     point p_end() const {
-        point p_e(p.x + v.x, p.y + v.y, p.z + v.z);
-        return p_e;
+        return p + v;
     }
     double length() const {
         return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
 };
 
-struct cut_2d {
+struct cut_2d final {
     point_2d p;
     vec_2d v;
     cut_2d(const point_2d &p1, const point_2d &p2): p(p1), v(p1, p2) {}
     cut_2d(const point_2d &p_in, const vec_2d &v_in): p(p_in), v(v_in) {}
+    point_2d p_end() const {
+        return p + v;
+    }
+    double length() const {
+        return sqrt(v.x * v.x + v.y * v.y);
+    }
 };
 
 g_obj_pos lines_pos_2d(const cut_2d &c1, const cut_2d &c2);
 bool is_cut_2d_intersects(const cut_2d &c1, const cut_2d &c2);
 
-struct plane {
+struct plane final {
     double a;
     double b;
     double c;
@@ -105,7 +152,7 @@ struct plane {
 g_obj_pos planes_pos(const plane &pl1, const plane &pl2);
 g_obj_pos cut_and_plane_pos(const plane &pl, const cut &c);
 
-class triangle {
+class triangle final {
 private:
     point p1;
     point p2;
@@ -128,7 +175,7 @@ public:
     bool is_in_triangle(const point &p) const;
 };
 
-class triangle_2d {
+class triangle_2d final {
 private:
     point_2d p1;
     point_2d p2;
@@ -147,7 +194,7 @@ public:
     bool is_in_triangle(const point_2d &p) const;
 };
 
-class geometry_object {
+class geometry_object final {
 private:
     g_obj_type ty;
     union {
@@ -177,7 +224,7 @@ public:
     }
 };
 
-class unknown_geometry_object {
+class unknown_geometry_object final {
 private:
     point p1;
     point p2;
@@ -242,9 +289,9 @@ bool check_intersection(const cut &c1, const cut &c2);
 bool check_intersection(const cut &c, const point &p);
 bool check_intersection(const point &p1, const point &p2);
 
-class intersection_finder {
+class intersection_finder final {
 private:
-    size_t n;
+    size_t num_of_objects;
     std::list <geometry_object> l;
     std::vector <bool> is_t_intersects;
 
@@ -336,7 +383,7 @@ private:
 
 
     //this method needs to copy list of the geometry object to change it in future
-    std::list <geometry_object> find_intersections_driver() const {
+    std::list <geometry_object> list_copy() const {
         return l;
     }
     void find_intersections_body(std::list <geometry_object> l_t) {
@@ -404,28 +451,47 @@ private:
     }
 
 public:
-    intersection_finder(size_t n_t, std::list <geometry_object> &objects): n(n_t), l(objects) {
-        for(size_t i = 0; i < n; i++) {
+    intersection_finder(size_t n_t, std::list <geometry_object> &objects): num_of_objects(n_t), l(objects) {
+        for(size_t i = 0; i < num_of_objects; i++) {
             is_t_intersects.push_back(false);
         }
     }
+
     intersection_finder(std::list <geometry_object> &objects): l(objects) {
-        n = objects.size();
-        for(size_t i = 0; i < n; i++) {
+        num_of_objects = objects.size();
+        for(size_t i = 0; i < num_of_objects; i++) {
             is_t_intersects.push_back(false);
         }
     }
+
     void find_intersections(){
-        find_intersections_body(find_intersections_driver());
+        find_intersections_body(list_copy());
     }
+
     std::vector <size_t> intersected_objects_nums() const {
         std::vector <size_t> nums;
-        for(size_t i = 0; i < n; i++) {
+        for(size_t i = 0; i < num_of_objects; i++) {
             if(is_t_intersects[i] == true) {
                 nums.push_back(i);
             }
         }
         return nums;
+    }
+
+    //this method returns vector of pairs of:
+    //1. triangle geometry objects
+    //2. is_intersects for this geometry object (bool type)
+    std::vector <std::pair <geometry_object, bool>> objs_condition_only_triangles() const {
+        std::vector <std::pair <geometry_object, bool>> objs;
+        std::list <geometry_object> l_copy = list_copy();
+        while(l_copy.size() > 0) {
+            if(l_copy.front().ret_type() == TRIANGLE) {
+                std::pair <geometry_object, bool> p(l_copy.front(), is_t_intersects[l_copy.front().ret_number()]);
+                objs.push_back(p);
+            }
+            l_copy.pop_front();
+        }
+        return objs;
     }
 };
 

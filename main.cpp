@@ -1,4 +1,4 @@
-//#define NORMAL
+#define NORMAL
 
 #include <iostream>
 #include <list>
@@ -9,6 +9,7 @@
 #ifndef NORMAL
 #include "triangle_test.h"
 #endif
+#include "vulkan_drawing.h"
 
 geometry::geometry_object input_geometry_object(size_t n);
 void print_triangle(const geometry::triangle &t);
@@ -103,5 +104,8 @@ int main() {
     for(int i = 0; i < (int) intersected_o_nums.size(); i++) {
         std::cout << intersected_o_nums[(size_t) i] << "\n";
     }
+
+    std::vector <std::pair <geometry::geometry_object, bool>> tr_for_draw = i_f.objs_condition_only_triangles();
+    draw_all_triangles(tr_for_draw);
     return 0;
 }
