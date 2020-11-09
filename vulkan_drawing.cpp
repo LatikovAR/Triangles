@@ -34,8 +34,11 @@ namespace  {
 struct Vertex final {
     glm::vec3 pos;
     glm::vec3 color;
+    glm::vec3 normal;
 
-    Vertex(const glm::vec3& pos_in, const glm::vec3& color_in): pos(pos_in), color(color_in){}
+    Vertex(const glm::vec3& pos_in, const glm::vec3& color_in, const glm::vec3& normal_in):
+        pos(pos_in),
+        color(color_in), normal(normal_in){}
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -46,8 +49,8 @@ struct Vertex final {
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -58,6 +61,11 @@ struct Vertex final {
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, normal);
 
         return attributeDescriptions;
     }
@@ -1517,23 +1525,32 @@ int draw_all_triangles(std::vector <std::pair <geometry::geometry_object, bool>>
             color = {0.0f, 0.0f, 1.0f};
         }
 
-        indices.push_back(static_cast<uint16_t>(vertices.size()));
+        geometry::vec norm = tr.make_plane().normal();
+        glm::vec3 normal(norm.x, norm.y, norm.z);
+
         geometry::point p = tr.p1_ret();
         glm::vec3 pos(p.x, p.y, p.z);
-        Vertex vert(pos, color);
+        Vertex vert(pos, color, normal);
         vertices.push_back(vert);
 
-        indices.push_back(static_cast<uint16_t>(vertices.size()));
         p = tr.p2_ret();
         pos = glm::vec3(p.x, p.y, p.z);
-        vert = Vertex(pos, color);
+        vert = Vertex(pos, color, normal);
         vertices.push_back(vert);
 
-        indices.push_back(static_cast<uint16_t>(vertices.size()));
         p = tr.p3_ret();
         pos = glm::vec3(p.x, p.y, p.z);
-        vert = Vertex(pos, color);
+        vert = Vertex(pos, color, normal);
         vertices.push_back(vert);
+
+        //for drawing one side
+        indices.push_back(static_cast<uint16_t>(vertices.size()) - 3);
+        indices.push_back(static_cast<uint16_t>(vertices.size()) - 2);
+        indices.push_back(static_cast<uint16_t>(vertices.size()) - 1);
+        //for drawing other side
+        indices.push_back(static_cast<uint16_t>(vertices.size()) - 3);
+        indices.push_back(static_cast<uint16_t>(vertices.size()) - 1);
+        indices.push_back(static_cast<uint16_t>(vertices.size()) - 2);
     }
 
     HelloTriangleApplication app(vertices, indices);

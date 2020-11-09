@@ -48,6 +48,7 @@ struct vec final {
         z = 0;
     }
     vec(double a, double b, double c): x(a), y(b), z(c) {}
+
     double length() const {
         return sqrt(x * x + y * y + z * z);
     }
@@ -135,17 +136,24 @@ struct plane final {
     double b;
     double c;
     double d;
+
     plane(const point &p1, const point &p2, const point &p3) {
         vec v1(p1, p2);
         vec v2(p1, p3);
         vec n = mult_vec(v1, v2);
+        n /= n.length();
         a = n.x;
         b = n.y;
         c = n.z;
         d = (a * p1.x + b * p1.y + c * p1.z) * (-1);
     }
+
     double point_side_plane(const point &p) const {
         return (p.x * a + p.y * b + p.z * c + d) / sqrt(a * a + b * b + c * c);
+    }
+
+    vec normal() const {
+        return vec(a, b, c);
     }
 };
 
