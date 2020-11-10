@@ -4,7 +4,7 @@ CXXFLAGS =
 DEF_SRC =  main.cpp geometry.cpp
 DEF_T_SRC =  main.cpp geometry.cpp triangle_test.cpp
 
-result: $(DEF_SRC)
+normal: $(DEF_SRC)
 	$(CXX) $(CXXFLAGS) $? -DNORMAL -o prog
 test0: $(DEF_T_SRC)
 	$(CXX) $(CXXFLAGS) $? -DTEST0 -o prog
