@@ -68,6 +68,6 @@ int main() {
     }
 
     std::vector <std::pair <geometry::geometry_object, bool>> tr_for_draw = i_f.objs_condition_only_triangles();
-    draw_all_triangles(tr_for_draw);
+    draw_triangles_driver(tr_for_draw);
     return 0;
 }

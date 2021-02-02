@@ -5,4 +5,4 @@
 
 #include "geometry.h"
 
-int draw_all_triangles(std::vector <std::pair <geometry::geometry_object, bool>> trs_for_draw);
+int draw_triangles_driver(std::vector <std::pair <geometry::geometry_object, bool>> trs_for_draw);

@@ -80,14 +80,14 @@ struct UniformBufferObject final {
     alignas(16) glm::mat4 proj;
 };
 
-class HelloTriangleApplication final {
+class Draw_Triangles final {
 private:
     GLFWwindow* window;
     const uint32_t WIDTH = 1000;
     const uint32_t HEIGHT = 900;
     const float Z_ROTATE_SPEED = 0.01f;
     const float Y_ROTATE_SPEED = 0.01f;
-    const float ZOOM_SPEED = 0.1f;
+    const float ZOOM_SPEED = 0.2f;
 
     const std::vector<const char*> validationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -148,7 +148,7 @@ private:
     std::vector<uint16_t> indices; //don't touch the type (uint16_t)!
 
 public:
-    HelloTriangleApplication(const std::vector<Vertex>& V, const std::vector<uint16_t>& I):
+    Draw_Triangles(const std::vector<Vertex>& V, const std::vector<uint16_t>& I):
         vertices(V),
         indices(I) {}
 
@@ -174,7 +174,7 @@ private:
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<Draw_Triangles*>(glfwGetWindowUserPointer(window));
         app->framebufferResized = true;
     }
 
@@ -1517,9 +1517,12 @@ private:
 
 }
 
-int draw_all_triangles(std::vector <std::pair <geometry::geometry_object, bool>> trs_for_draw) {
+int draw_triangles_driver(std::vector <std::pair <geometry::geometry_object, bool>> trs_for_draw) {
     std::vector<Vertex> vertices;
     std::vector<uint16_t> indices; //don't touch the type (uint16_t)!
+
+    vertices.reserve(trs_for_draw.size() * 3);
+    indices.reserve(trs_for_draw.size() * 6);
 
     for(auto elem : trs_for_draw) {
         assert(elem.first.ret_type() == geometry::TRIANGLE);
@@ -1561,7 +1564,7 @@ int draw_all_triangles(std::vector <std::pair <geometry::geometry_object, bool>>
         indices.push_back(static_cast<uint16_t>(vertices.size()) - 2);
     }
 
-    HelloTriangleApplication app(vertices, indices);
+    Draw_Triangles app(vertices, indices);
 
     try {
         app.run();
