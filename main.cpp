@@ -1,22 +1,14 @@
-#define VISUALIZE
-
 #include <iostream>
 #include <list>
 #include <cassert>
 #include <vector>
 
 #include "geometry.h"
-#if !(defined (NORMAL) || defined (VISUALIZE))
-#include "triangle_test.h"
-#endif
-#ifdef VISUALIZE
 #include "vulkan_drawing.h"
-#endif
 
 geometry::geometry_object input_geometry_object(size_t n);
 void print_triangle(const geometry::triangle &t);
 
-#if defined (NORMAL) || defined (VISUALIZE)
 geometry::geometry_object input_geometry_object(size_t n) {
     double x, y, z;
     std::cin >> x >> y >> z;
@@ -47,7 +39,6 @@ geometry::geometry_object input_geometry_object(size_t n) {
     geometry::geometry_object o(geometry::POINT, p, n);
     return o;
 }
-#endif
 
 void print_triangle(const geometry::triangle &t) {
     geometry::point p = t.p1_ret();
@@ -62,42 +53,11 @@ void print_triangle(const geometry::triangle &t) {
 int main() {
     size_t n;
     std::list <geometry::geometry_object> l_t;
-#if defined (NORMAL) || defined (VISUALIZE)
     std::cin >> n;
-#endif
-#ifdef TEST0
-    test0(&l_t);
-#endif
-#ifdef TEST1
-    test1(&l_t);
-#endif
-#ifdef TEST2
-    test2(&l_t);
-#endif
-#ifdef TEST3
-    test3(&l_t);
-#endif
-#ifdef TEST4
-    test4(&l_t);
-#endif
-#ifdef TEST5
-    test5(&l_t);
-#endif
-#ifdef TEST6
-    test6(&l_t);
-#endif
-#ifdef TEST7
-    test7(&l_t);
-#endif
-#ifdef TEST8
-    test8(&l_t);
-#endif
-#if defined (NORMAL) || defined (VISUALIZE)
     for(size_t i = 0; i < n; i++) {
         l_t.push_back(input_geometry_object(i));
     }
     assert(l_t.size() == n);
-#endif
 
     n = l_t.size();
     geometry::intersection_finder i_f(n, l_t);
@@ -107,9 +67,7 @@ int main() {
         std::cout << intersected_o_nums[(size_t) i] << "\n";
     }
 
-#ifdef VISUALIZE
     std::vector <std::pair <geometry::geometry_object, bool>> tr_for_draw = i_f.objs_condition_only_triangles();
     draw_all_triangles(tr_for_draw);
-#endif
     return 0;
 }

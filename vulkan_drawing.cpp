@@ -23,8 +23,11 @@
 #include <array>
 #include <chrono>
 #include <cassert>
+
+#ifdef _WIN32
 #include <windows.h>
 #include <winuser.h>
+#endif
 
 #include "geometry.h"
 #include "vulkan_drawing.h"
@@ -273,7 +276,9 @@ private:
             vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
         }
 
-        vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+        vkFreeCommandBuffers(device, commandPool,
+                             static_cast<uint32_t>(commandBuffers.size()),
+                             commandBuffers.data());
 
         vkDestroyPipeline(device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -620,7 +625,8 @@ private:
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
         for (const auto& availableFormat : availableFormats) {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            if ((availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB) &&
+                (availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)) {
                 return availableFormat;
             }
         }
@@ -725,8 +731,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile("vert.spv");
+        auto fragShaderCode = readFile("frag.spv");
         //std:: cout << vertShaderCode.size() << "  " << fragShaderCode.size() << "\n";
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
@@ -1317,6 +1323,7 @@ private:
         //auto currentTime = std::chrono::high_resolution_clock::now();
         //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
+#ifdef _WIN32
         if(GetAsyncKeyState(VK_LEFT)) {
             z_rotate_param += -Z_ROTATE_SPEED;
         }
@@ -1340,6 +1347,7 @@ private:
         if(GetAsyncKeyState(VK_NEXT)) {
             zoom_param += -ZOOM_SPEED;
         }
+#endif
 
         UniformBufferObject ubo{};
 
