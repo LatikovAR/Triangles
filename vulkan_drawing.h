@@ -4,5 +4,6 @@
 #include <utility>
 
 #include "geometry.h"
+#include "intersection_finder.h"
 
-int draw_triangles_driver(std::vector <std::pair <geometry::geometry_object, bool>> trs_for_draw);
+int draw_triangles_driver(const geometry::Objects_and_Intersections&& objects_for_draw);

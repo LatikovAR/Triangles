@@ -30,6 +30,7 @@
 #endif
 
 #include "geometry.h"
+#include "intersection_finder.h"
 #include "vulkan_drawing.h"
 
 namespace  {
@@ -1517,40 +1518,41 @@ private:
 
 }
 
-int draw_triangles_driver(std::vector <std::pair <geometry::geometry_object, bool>> trs_for_draw) {
+int draw_triangles_driver(const geometry::Objects_and_Intersections&& objects_for_draw) {
     std::vector<Vertex> vertices;
     std::vector<uint16_t> indices; //don't touch the type (uint16_t)!
 
-    vertices.reserve(trs_for_draw.size() * 3);
-    indices.reserve(trs_for_draw.size() * 6);
+    const std::vector<geometry::Object_Triangle>& triangles = objects_for_draw.triangles();
+    const std::vector<bool>& intersection_flags = objects_for_draw.intersection_flags();
 
-    for(auto elem : trs_for_draw) {
-        assert(elem.first.ret_type() == geometry::TRIANGLE);
-        geometry::triangle tr = elem.first.ret_triangle();
+    vertices.reserve(triangles.size() * 3);
+    indices.reserve(triangles.size() * 6);
+
+    for(const geometry::Object_Triangle& elem : triangles) {
 
         glm::vec3 color;
-        if(elem.second == true) {
+        if(intersection_flags[elem.number()] == true) {
             color = {1.0f, 0.0f, 0.0f};
         }
         else {
             color = {0.0f, 0.0f, 1.0f};
         }
 
-        geometry::vec norm = tr.make_plane().normal();
-        glm::vec3 normal(norm.x, norm.y, norm.z);
+        geometry::vec norm = elem.pl().normal();
+        glm::vec3 normal(norm.x(), norm.y(), norm.z());
 
-        geometry::point p = tr.p1_ret();
-        glm::vec3 pos(p.x, p.y, p.z);
+        geometry::point p = elem.p1();
+        glm::vec3 pos(p.x(), p.y(), p.z());
         Vertex vert(pos, color, normal);
         vertices.push_back(vert);
 
-        p = tr.p2_ret();
-        pos = glm::vec3(p.x, p.y, p.z);
+        p = elem.p2();
+        pos = glm::vec3(p.x(), p.y(), p.z());
         vert = Vertex(pos, color, normal);
         vertices.push_back(vert);
 
-        p = tr.p3_ret();
-        pos = glm::vec3(p.x, p.y, p.z);
+        p = elem.p3();
+        pos = glm::vec3(p.x(), p.y(), p.z());
         vert = Vertex(pos, color, normal);
         vertices.push_back(vert);
 
