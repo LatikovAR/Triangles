@@ -24,17 +24,16 @@ int main() {
     size_t n;
     std::cin >> n;
 
-    std::vector<Undefined_Object> objects;
+    std::vector<Geometry_Object> objects;
     objects.reserve(n);
 
     for(size_t i = 0; i < n; i++) {
-        objects.push_back(input_geometry_object());
-        std::cout << i << std::endl;
+        objects.push_back(Geometry_Object(i, input_geometry_object()));
     }
 
     std::cout << "Input complete.\n";
 
-    Intersection_Finder intersection_finder{Geometry_Object_Storage(objects)};
+    Intersection_Finder intersection_finder{std::move(objects)};
     Objects_and_Intersections intersection_defined_objects = intersection_finder.compute_intersections();
     const std::vector<bool>& intersection_flags = intersection_defined_objects.intersection_flags();
 
@@ -45,7 +44,6 @@ int main() {
         }
     }
     std::cout << std::endl;
-
-    //draw_triangles_driver(std::move(intersection_defined_objects));
+    draw_triangles_driver(std::move(intersection_defined_objects));
     return 0;
 }

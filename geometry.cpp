@@ -125,6 +125,13 @@ point intersection_plane_and_line(const Plane &pl, const Cut &c) {
     return point(x, y, z);
 }
 
+int Plane::point_side_plane(const point& p) const {
+    double k = p.x() * a + p.y() * b + p.z() * c + d;
+    if(k > DOUBLE_GAP) return 1;
+    if(k < -DOUBLE_GAP) return -1;
+    return 0;
+}
+
 int Plane::cut_side_plane(const Cut& c) const {
     int i1 = point_side_plane(c.p_begin());
     int i2 = point_side_plane(c.p_end());
@@ -138,7 +145,7 @@ int Plane::triangle_side_plane(const Triangle& t) const {
     int i2 = point_side_plane(t.p2());
     int i3 = point_side_plane(t.p3());
     if((i1 == 1) && (i2 == 1) && (i3 == 1)) return 1;
-    if((i1 == -1) && (i2 == -1) && (i3 == 1)) return -1;
+    if((i1 == -1) && (i2 == -1) && (i3 == -1)) return -1;
     return 0;
 }
 

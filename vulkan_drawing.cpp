@@ -1522,13 +1522,19 @@ int draw_triangles_driver(const geometry::Objects_and_Intersections&& objects_fo
     std::vector<Vertex> vertices;
     std::vector<uint16_t> indices; //don't touch the type (uint16_t)!
 
-    const std::vector<geometry::Object_Triangle>& triangles = objects_for_draw.triangles();
+    const std::vector<geometry::Geometry_Object>& objects = objects_for_draw.objects();
     const std::vector<bool>& intersection_flags = objects_for_draw.intersection_flags();
 
-    vertices.reserve(triangles.size() * 3);
-    indices.reserve(triangles.size() * 6);
+    size_t num_of_triangles = 0;
+    for(const geometry::Geometry_Object& elem : objects) {
+        if(elem.type() == geometry::TRIANGLE) num_of_triangles++;
+    }
 
-    for(const geometry::Object_Triangle& elem : triangles) {
+    vertices.reserve(num_of_triangles * 3);
+    indices.reserve(num_of_triangles * 6);
+
+    for(const geometry::Geometry_Object& elem : objects) {
+        if(elem.type() != geometry::TRIANGLE) continue;
 
         glm::vec3 color;
         if(intersection_flags[elem.number()] == true) {
@@ -1538,20 +1544,22 @@ int draw_triangles_driver(const geometry::Objects_and_Intersections&& objects_fo
             color = {0.0f, 0.0f, 1.0f};
         }
 
-        geometry::vec norm = elem.pl().normal();
+        const geometry::Triangle& t = elem.triangle();
+
+        geometry::vec norm = t.pl().normal();
         glm::vec3 normal(norm.x(), norm.y(), norm.z());
 
-        geometry::point p = elem.p1();
+        geometry::point p = t.p1();
         glm::vec3 pos(p.x(), p.y(), p.z());
         Vertex vert(pos, color, normal);
         vertices.push_back(vert);
 
-        p = elem.p2();
+        p = t.p2();
         pos = glm::vec3(p.x(), p.y(), p.z());
         vert = Vertex(pos, color, normal);
         vertices.push_back(vert);
 
-        p = elem.p3();
+        p = t.p3();
         pos = glm::vec3(p.x(), p.y(), p.z());
         vert = Vertex(pos, color, normal);
         vertices.push_back(vert);

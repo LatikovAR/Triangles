@@ -11,18 +11,17 @@
 namespace geometry {
 
 enum g_obj_pos {COMMON, PARALLEL, MATCH};
-//enum g_obj_type {TRIANGLE, CUT, POINT};
 
 const double DOUBLE_GAP = 0.000001;
 
-
+void printI();
 
 //----------------------------------------point-----------------------------------
 
 class vec;
 class vec_2d;
 
-class point {
+class point final{
 protected:
     double x_;
     double y_;
@@ -33,7 +32,7 @@ public:
     double z() const { return z_; }
 
     point(double x, double y, double z): x_(x), y_(y), z_(z) {}
-    virtual ~point() {}
+    //virtual ~point() {}
 
     point& operator+=(const vec& v)&;
     bool is_real_point() const;
@@ -168,7 +167,7 @@ Normalized_Quaternion operator*(const Normalized_Quaternion& lhs, const Normaliz
 
 //------------------------------------------Cut------------------------------------
 
-class Cut {
+class Cut final {
 protected:
     point p_;
     vec v_;
@@ -179,7 +178,7 @@ public:
     Cut(const point &p, const vec &v): p_(p), v_(v) {
         if(v_.is_null()) throw std::invalid_argument("Cut length = 0");
     }
-    virtual ~Cut() {}
+    //virtual ~Cut() {}
 
     const point& p_begin() const { return p_; }
     point p_end() const { return p_ + v_; }
@@ -228,12 +227,7 @@ public:
 
     Plane(const point &p1, const point &p2, const point &p3);
 
-    int point_side_plane(const point& p) const {
-        double k = p.x() * a + p.y() * b + p.z() * c + d;
-        if(k > DOUBLE_GAP) return 1;
-        if(k < -DOUBLE_GAP) return -1;
-        return 0;
-    }
+    int point_side_plane(const point& p) const;
     int cut_side_plane(const Cut& c) const;
     int triangle_side_plane(const Triangle& t) const;
     vec normal() const { return vec(a, b, c); }
@@ -249,7 +243,7 @@ point intersection_plane_and_line(const Plane &pl, const Cut &c);
 
 //---------------------------------------Triangle----------------------------------
 
-class Triangle {
+class Triangle final {
 protected:
     point p1_;
     point p2_;
@@ -265,7 +259,7 @@ public:
         p1_(p1), p2_(p2), p3_(p3), pl_(Plane(p1, p2, p3)) {
         //matching points checked in Plane constrcutor
     }
-    virtual ~Triangle() {}
+    //virtual ~Triangle() {}
 
     void print() const {
         std::cout << p1_.x() << " " << p1_.y() << " " << p1_.z() << std::endl;
