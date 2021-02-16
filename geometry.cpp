@@ -9,6 +9,12 @@ namespace geometry {
 
 //-------------------------------------------Cut-----------------------------------
 
+void Cut::print() const {
+    point p_e(p_end());
+    std::cout << p_.x() << " " << p_.y() << " " << p_.z() << std::endl;
+    std::cout << p_e.x() << " " << p_e.y() << " " << p_e.z() << std::endl;
+}
+
 g_obj_pos lines_pos_2d(const Cut_2d &c1, const Cut_2d &c2) {
     if(vec_2d::is_parallel(c1.vec(), c2.vec()) == false) { return COMMON; }
 
@@ -294,5 +300,115 @@ bool is_triangles_intersects_2d(const Triangle_2d &t1, const Triangle_2d &t2) {
     //other combinations is excess
 
     return false;
+}
+
+
+
+
+//------------------------------------Geometry_Objects-------------------------------
+
+void Geometry_Object::define_object() {
+    if(obj_type_ != UNDEFINED) {
+        return;
+    }
+
+    if(is_points_match(u_o_.p1(), u_o_.p2())) {
+
+        if(is_points_match(u_o_.p1(), u_o_.p3())) {
+            obj_type_ = POINT;
+            p_ = point(u_o_.p1());
+            return;
+        }
+
+        obj_type_ = CUT;
+        c_ = Cut(u_o_.p1(), u_o_.p3());
+        return;
+    }
+
+    if((is_points_match(u_o_.p1(), u_o_.p3())) ||
+       (is_points_match(u_o_.p2(), u_o_.p3()))) {
+        obj_type_ = CUT;
+        c_ = Cut(u_o_.p1(), u_o_.p2());
+        return;
+    }
+
+    obj_type_ = TRIANGLE;
+    t_ = Triangle(u_o_.p1(), u_o_.p2(), u_o_.p3());
+}
+
+void Geometry_Object::rotate_object(const Cut& axis, double angle) {
+    Normalized_Quaternion quat(angle, axis.vec());
+
+    if(obj_type_ == TRIANGLE) {
+        vec v(axis.p_begin(), t_.p1());
+        v.rotate_vec(quat);
+        point p1_new = axis.p_begin() + v;
+
+        v = vec(axis.p_begin(), t_.p2());
+        v.rotate_vec(quat);
+        point p2_new = axis.p_begin() + v;
+
+        v = vec(axis.p_begin(), t_.p3());
+        v.rotate_vec(quat);
+        point p3_new = axis.p_begin() + v;
+
+        t_ = Triangle(p1_new, p2_new, p3_new);
+        return;
+    }
+
+    if(obj_type_ == CUT) {
+        vec v(axis.p_begin(), c_.p_begin());
+        v.rotate_vec(quat);
+        point p_begin_new = axis.p_begin() + v;
+
+        v = c_.vec();
+        v.rotate_vec(quat);
+
+        c_ = Cut(p_begin_new, v);
+        return;
+    }
+
+    if(obj_type_ == POINT) {
+        vec v(axis.p_begin(), p_);
+        v.rotate_vec(quat);
+        p_ = axis.p_begin() + v;
+        return;
+    }
+
+    assert(obj_type_ == UNDEFINED);
+    vec v(axis.p_begin(), u_o_.p1());
+    v.rotate_vec(quat);
+    point p1_new = axis.p_begin() + v;
+
+    v = vec(axis.p_begin(), u_o_.p2());
+    v.rotate_vec(quat);
+    point p2_new = axis.p_begin() + v;
+
+    v = vec(axis.p_begin(), u_o_.p3());
+    v.rotate_vec(quat);
+    point p3_new = axis.p_begin() + v;
+
+    u_o_ = Undefined_Object(p1_new, p2_new, p3_new);
+    return;
+}
+
+void Geometry_Object::print() const {
+    if(obj_type_ == TRIANGLE) {
+        t_.print();
+        return;
+    }
+
+    if(obj_type_ == CUT) {
+        c_.print();
+        return;
+    }
+
+    if(obj_type_ == POINT) {
+        p_.print();
+        return;
+    }
+
+    assert(obj_type_ == UNDEFINED);
+    u_o_.print();
 }
 } //namespace geometry

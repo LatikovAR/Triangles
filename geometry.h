@@ -11,10 +11,10 @@
 namespace geometry {
 
 enum g_obj_pos {COMMON, PARALLEL, MATCH};
+enum g_obj_type {TRIANGLE, CUT, POINT, UNDEFINED};
 
 const double DOUBLE_GAP = 0.000001;
 
-void printI();
 
 //----------------------------------------point-----------------------------------
 
@@ -32,10 +32,10 @@ public:
     double z() const { return z_; }
 
     point(double x, double y, double z): x_(x), y_(y), z_(z) {}
-    //virtual ~point() {}
 
     point& operator+=(const vec& v)&;
     bool is_real_point() const;
+    void print() const { std::cout << x_ << " " << y_ << " " << z_ << std::endl; }
 };
 
 point operator+(const point& p, const vec& v);
@@ -97,7 +97,7 @@ public:
     void normalize();
     bool is_null() const { return fabs(length()) < DOUBLE_GAP; }
     static bool is_parallel(const vec& v1, const vec& v2);
-    vec rotate_vec(const Normalized_Quaternion& quat) const;
+    void rotate_vec(const Normalized_Quaternion& quat);
 };
 
 vec operator+(const vec& v1, const vec& v2);
@@ -178,13 +178,13 @@ public:
     Cut(const point &p, const vec &v): p_(p), v_(v) {
         if(v_.is_null()) throw std::invalid_argument("Cut length = 0");
     }
-    //virtual ~Cut() {}
 
     const point& p_begin() const { return p_; }
     point p_end() const { return p_ + v_; }
     const vec& vec() const { return v_; }
 
     double length() const { return v_.length(); }
+    void print() const;
 };
 
 class Cut_2d final {
@@ -259,7 +259,6 @@ public:
         p1_(p1), p2_(p2), p3_(p3), pl_(Plane(p1, p2, p3)) {
         //matching points checked in Plane constrcutor
     }
-    //virtual ~Triangle() {}
 
     void print() const {
         std::cout << p1_.x() << " " << p1_.y() << " " << p1_.z() << std::endl;
@@ -297,5 +296,60 @@ bool is_cut_and_triangle_intersects_on_plane(const Triangle &t, const Cut &c);
 bool is_cut_and_triangle_intersects_2d(const Triangle_2d &t, const Cut_2d &c);
 bool is_triangles_intersects_on_plane(const Triangle &t1, const Triangle &t2);
 bool is_triangles_intersects_2d(const Triangle_2d &t1, const Triangle_2d &t2);
+
+
+
+
+//------------------------------------Geometry_Objects------------------------------
+
+class Undefined_Object final {
+private:
+    point p1_;
+    point p2_;
+    point p3_;
+public:
+    const point& p1() const { return p1_; }
+    const point& p2() const { return p2_; }
+    const point& p3() const { return p3_; }
+
+    Undefined_Object(const point &p1, const point &p2, const point &p3):
+        p1_(p1), p2_(p2), p3_(p3) {}
+
+    void print() const {
+        std::cout << p1_.x() << " " << p1_.y() << " " << p1_.z() << std::endl;
+        std::cout << p2_.x() << " " << p2_.y() << " " << p2_.z() << std::endl;
+        std::cout << p3_.x() << " " << p3_.y() << " " << p3_.z() << std::endl;
+    }
+};
+
+class Geometry_Object final {
+private:
+    size_t number_;
+    g_obj_type obj_type_;
+    union {
+        point p_;
+        Cut c_;
+        Triangle t_;
+        Undefined_Object u_o_;
+    };
+public:
+    size_t number() const { return number_; }
+    g_obj_type type() const { return obj_type_; }
+
+    const point& pointt() const { return p_; }
+    const Cut& cut() const { return c_; }
+    const Triangle& triangle() const { return t_; }
+
+    Geometry_Object() {}
+    Geometry_Object(size_t number, const Undefined_Object& undef_obj):
+        number_(number), obj_type_(UNDEFINED), u_o_(undef_obj) {}
+
+    void define_object();
+    void rotate_object(const Cut& axis, double angle); //angle should be in radians
+    void print() const;
+};
+
+
+
 
 } //namespace geometry

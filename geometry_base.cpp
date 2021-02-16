@@ -204,7 +204,7 @@ vec mult_vec(const vec &v1, const vec &v2) {
     return vec(a, b, c);
 }
 
-vec vec::rotate_vec(const Normalized_Quaternion& quat) const {
+void vec::rotate_vec(const Normalized_Quaternion& quat) {
     Normalized_Quaternion adj_quat = quat.adj();
 
     //(A * v) * A(adj) = T * A(adj);     A, T - quaternions
@@ -214,13 +214,10 @@ vec vec::rotate_vec(const Normalized_Quaternion& quat) const {
     t2 = quat.a0() * y_ + quat.a3() * x_ - quat.a1() * z_;
     t3 = quat.a0() * z_ + quat.a1() * y_ - quat.a2() * x_;
 
-    //T * A(adj) = rotated_v
-    double x, y, z;
-    x = t0 * adj_quat.a1() + t1 * adj_quat.a0() + t2 * adj_quat.a3() - t3 * adj_quat.a2();
-    y = t0 * adj_quat.a2() + t2 * adj_quat.a0() + t3 * adj_quat.a1() - t1 * adj_quat.a3();
-    z = t0 * adj_quat.a3() + t3 * adj_quat.a0() + t1 * adj_quat.a2() - t2 * adj_quat.a1();
-
-    return vec(x, y, z);
+    //T * A(adj) = rotated_vec
+    x_ = t0 * adj_quat.a1() + t1 * adj_quat.a0() + t2 * adj_quat.a3() - t3 * adj_quat.a2();
+    y_ = t0 * adj_quat.a2() + t2 * adj_quat.a0() + t3 * adj_quat.a1() - t1 * adj_quat.a3();
+    z_ = t0 * adj_quat.a3() + t3 * adj_quat.a0() + t1 * adj_quat.a2() - t2 * adj_quat.a1();
 }
 
 
