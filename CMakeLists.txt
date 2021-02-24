@@ -16,7 +16,9 @@ set(GLFW D:/glfw-3.3.2.bin.WIN64)
 set(GLM D:/glm)
 
 add_library(geometry STATIC geometry_base.cpp geometry.cpp intersection_finder.cpp rotator.cpp)
+
 add_library(vulkan_visualization STATIC vulkan_drawing.cpp)
+target_link_libraries(vulkan_visualization geometry)
 
 target_include_directories(vulkan_visualization PRIVATE
     $ENV{VULKAN_SDK}/Include
@@ -34,5 +36,4 @@ add_custom_command(TARGET vulkan_visualization
                    ARGS shaders/shader.vert -o vert.spv)
 
 add_executable(2 main.cpp)
-
-target_link_libraries(2 geometry vulkan_visualization)
+target_link_libraries(2 vulkan_visualization)

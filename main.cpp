@@ -32,50 +32,32 @@ Cut input_axis() {
     return Cut(p1, p2);
 }
 
+Rotatable_Object input_rot_object(size_t number) {
+    Geometry_Object obj(number, input_geometry_object());
+    Cut axis(input_axis());
+    double speed;
+    std::cin >> speed;
+    speed = (speed / 180.0) * M_PI; //conversion to radians
+
+    Rotatable_Object r_obj(std::move(obj), std::move(axis), speed);
+    return r_obj;
+}
+
 int main() {
     size_t n;
     std::cin >> n;
 
-    std::vector<Geometry_Object> objects;
-    std::vector<Cut> axes;
-    std::vector<double> speed;
-    objects.reserve(n);
-    axes.reserve(n);
-    speed.reserve(n);
+    std::vector<Rotatable_Object> rot_objs;
+    rot_objs.reserve(n);
 
-    for(size_t i = 0; i < n; i++) {
-        objects.push_back(Geometry_Object(i, input_geometry_object()));
-        axes.push_back(input_axis());
-        double sp;
-        std::cin >> sp;
-        sp = (sp / 180.0) * M_PI; //conversion to radians
-        speed.push_back(sp);
+    for(size_t i = 0; i < n; ++i) {
+        rot_objs.push_back(input_rot_object(i));
     }
 
-    std::cout << "Input complete.\n";
+    std::cout << "Input complete.\n\n";
 
-    Rotator rotate(std::move(objects), std::move(axes), std::move(speed));
-    for(int i = 0; i < 19; ++i) {
-        std::vector<Geometry_Object> rot_objects = rotate.cur_objects_pos(i * 1000);
-        std::cout << "sec: " << i << std::endl;
-        for(const auto& obj : rot_objects) {
-            obj.print();
-            std::cout << std::endl;
-        }
-    }
+    vulkan::Draw_Triangles_Manager draw{std::move(rot_objs)};
+    draw.run();
 
-    /*
-    Intersection_Finder intersection_finder{std::move(objects)};
-    Objects_and_Intersections intersection_defined_objects = intersection_finder.compute_intersections();
-    const std::vector<bool>& intersection_flags = intersection_defined_objects.intersection_flags();
-
-    std::cout << "Intersected objects:" << std::endl;
-    for(size_t i = 0; i < intersection_flags.size(); ++i) {
-        if(intersection_flags[i] == true) {
-            std::cout << i << std::endl;
-        }
-    }
-    std::cout << std::endl;
-    draw_triangles_driver(std::move(intersection_defined_objects)); */
     return 0;
 }

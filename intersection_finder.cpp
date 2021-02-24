@@ -7,36 +7,225 @@
 
 namespace geometry {
 
-void Geometry_Object::define_object() {
-    if(obj_type_ != UNDEFINED) {
-        return;
+//-------------------------------------Intersection_Finder------------------------
+
+Intersection_Finder::Intersection_Finder(std::vector<Geometry_Object>&& objects):
+    objects_(objects)
+{
+    intersection_flags_.reserve(objects_.size());
+    for(size_t i = 0; i < objects_.size(); ++i) {
+        intersection_flags_.push_back(false);
+    }
+}
+
+Objects_and_Intersections Intersection_Finder::compute_intersections() {
+
+    for(size_t i = 0; i < objects_.size(); ++i) {
+        objects_[i].define_object();
     }
 
-    if(is_points_match(u_o_.p1(), u_o_.p2())) {
+    std::vector<Geometry_Object*> p_objects(objects_.size());
+    for(size_t i = 0; i < objects_.size(); ++i) {
+        p_objects[i] = &(objects_[i]);
+    }
 
-        if(is_points_match(u_o_.p1(), u_o_.p3())) {
-            obj_type_ = POINT;
-            p_ = point(u_o_.p1());
+    compute_intersections_recursive_algorithm(p_objects);
+
+    Objects_and_Intersections answer(std::move(objects_),
+                                     std::move(intersection_flags_));
+    return answer;
+}
+
+void Intersection_Finder::compute_intersections_recursive_algorithm(
+        const std::vector<Geometry_Object*>& p_objects)
+{
+    if(p_objects.size() > 1) {
+        Geometry_Object* root_object = p_objects[0];
+
+        assert(root_object->type() != UNDEFINED);
+
+        if(root_object->type() == TRIANGLE) {
+            root_triangle_case(p_objects);
             return;
         }
 
-        obj_type_ = CUT;
-        c_ = Cut(u_o_.p1(), u_o_.p3());
-        return;
-    }
+        if(root_object->type() == CUT) {
+            root_cut_case(p_objects);
+            return;
+        }
 
-    if((is_points_match(u_o_.p1(), u_o_.p3())) ||
-       (is_points_match(u_o_.p2(), u_o_.p3()))) {
-        obj_type_ = CUT;
-        c_ = Cut(u_o_.p1(), u_o_.p2());
-        return;
+        assert(root_object->type() == POINT);
+        root_point_case(p_objects);
     }
-
-    obj_type_ = TRIANGLE;
-    t_ = Triangle(u_o_.p1(), u_o_.p2(), u_o_.p3());
 }
 
-bool Geometry_Object::check_intersection(const Triangle &t1, const Triangle &t2) {
+void Intersection_Finder::root_triangle_case(const std::vector<Geometry_Object*>& p_objects) {
+    const Triangle& root_t = p_objects[0]->triangle();
+    const Plane& pl = root_t.pl();
+    std::vector<Geometry_Object*> p_objects_new1;
+    std::vector<Geometry_Object*> p_objects_new2;
+
+    for(size_t i = 1; i < p_objects.size(); ++i) {
+        Geometry_Object* cur_obj = p_objects[i];
+
+        if(cur_obj->type() == TRIANGLE) {
+            const Triangle& t = cur_obj->triangle();
+            int k = pl.triangle_side_plane(t);
+
+            if(k != 1) p_objects_new2.push_back(cur_obj);
+            if(k != -1) p_objects_new1.push_back(cur_obj);
+
+            if(k == 0) {
+                if(check_intersection(root_t, t)) {
+                    intersection_flags_[p_objects[0]->number()] = true;
+                    intersection_flags_[cur_obj->number()] = true;
+                }
+            }
+
+            continue;
+        }
+
+        if(cur_obj->type() == CUT) {
+            const Cut& c = cur_obj->cut();
+            int k = pl.cut_side_plane(c);
+
+            if(k != 1) p_objects_new2.push_back(cur_obj);
+            if(k != -1) p_objects_new1.push_back(cur_obj);
+
+            if(k == 0) {
+                if(check_intersection(root_t, c)) {
+                    intersection_flags_[p_objects[0]->number()] = true;
+                    intersection_flags_[cur_obj->number()] = true;
+                }
+            }
+
+            continue;
+        }
+
+        assert(cur_obj->type() == POINT);
+        const point& p = cur_obj->pointt();
+        int k = pl.point_side_plane(p);
+
+        if(k != 1) p_objects_new2.push_back(cur_obj);
+        if(k != -1) p_objects_new1.push_back(cur_obj);
+
+        if(k == 0) {
+            if(check_intersection(root_t, p)) {
+                intersection_flags_[p_objects[0]->number()] = true;
+                intersection_flags_[cur_obj->number()] = true;
+            }
+        }
+    }
+
+    assert((p_objects_new1.size() < p_objects.size()) &&
+           (p_objects_new2.size() < p_objects.size()));
+
+
+    if(p_objects_new1.size() == (p_objects.size() - 1)) {
+        compute_intersections_recursive_algorithm(p_objects_new1);
+        return;
+    }
+
+    if (p_objects_new2.size() == (p_objects.size() - 1)) {
+        compute_intersections_recursive_algorithm(p_objects_new2);
+        return;
+    }
+
+    compute_intersections_recursive_algorithm(p_objects_new1);
+    compute_intersections_recursive_algorithm(p_objects_new2);
+}
+
+void Intersection_Finder::root_cut_case(const std::vector<Geometry_Object*>& p_objects) {
+    const Cut& root_c = p_objects[0]->cut();
+    std::vector<Geometry_Object*> p_objects_new;
+    p_objects_new.reserve(p_objects.size() - 1);
+
+    for(size_t i = 1; i < p_objects.size(); ++i) {
+        Geometry_Object* cur_obj = p_objects[i];
+        p_objects_new.push_back(cur_obj);
+
+        if(cur_obj->type() == TRIANGLE) {
+            const Triangle& t = cur_obj->triangle();
+
+            if(check_intersection(root_c, t)) {
+                intersection_flags_[p_objects[0]->number()] = true;
+                intersection_flags_[cur_obj->number()] = true;
+            }
+
+            continue;
+        }
+
+        if(cur_obj->type() == CUT) {
+            const Cut& c = cur_obj->cut();
+
+            if(check_intersection(root_c, c)) {
+                intersection_flags_[p_objects[0]->number()] = true;
+                intersection_flags_[cur_obj->number()] = true;
+            }
+
+            continue;
+        }
+
+        assert(cur_obj->type() == POINT);
+        const point& p = cur_obj->pointt();
+
+        if(check_intersection(root_c, p)) {
+            intersection_flags_[p_objects[0]->number()] = true;
+            intersection_flags_[cur_obj->number()] = true;
+        }
+    }
+
+    assert(p_objects_new.size() < p_objects.size());
+
+    compute_intersections_recursive_algorithm(p_objects_new);
+}
+
+void Intersection_Finder::root_point_case(const std::vector<Geometry_Object*>& p_objects) {
+    const point& root_p = p_objects[0]->pointt();
+    std::vector<Geometry_Object*> p_objects_new;
+    p_objects_new.reserve(p_objects.size() - 1);
+
+    for(size_t i = 1; i < p_objects.size(); ++i) {
+        Geometry_Object* cur_obj = p_objects[i];
+        p_objects_new.push_back(cur_obj);
+
+        if(cur_obj->type() == TRIANGLE) {
+            const Triangle& t = cur_obj->triangle();
+
+            if(check_intersection(root_p, t)) {
+                intersection_flags_[p_objects[0]->number()] = true;
+                intersection_flags_[cur_obj->number()] = true;
+            }
+
+            continue;
+        }
+
+        if(cur_obj->type() == CUT) {
+            const Cut& c = cur_obj->cut();
+
+            if(check_intersection(root_p, c)) {
+                intersection_flags_[p_objects[0]->number()] = true;
+                intersection_flags_[cur_obj->number()] = true;
+            }
+
+            continue;
+        }
+
+        assert(cur_obj->type() == POINT);
+        const point& p = cur_obj->pointt();
+
+        if(check_intersection(root_p, p)) {
+            intersection_flags_[p_objects[0]->number()] = true;
+            intersection_flags_[cur_obj->number()] = true;
+        }
+    }
+
+    assert(p_objects_new.size() < p_objects.size());
+
+    compute_intersections_recursive_algorithm(p_objects_new);
+}
+
+bool Intersection_Finder::check_intersection(const Triangle &t1, const Triangle &t2) {
     g_obj_pos p_pos = planes_pos(t1.pl(), t2.pl());
 
     if(p_pos == PARALLEL) return false;
@@ -106,7 +295,7 @@ bool Geometry_Object::check_intersection(const Triangle &t1, const Triangle &t2)
     return is_cut_and_triangle_intersects_on_plane(t1, c);
 }
 
-bool Geometry_Object::check_intersection(const Triangle &t, const Cut &c) {
+bool Intersection_Finder::check_intersection(const Triangle &t, const Cut &c) {
     g_obj_pos pos = cut_and_plane_pos(t.pl(), c);
 
     if(pos == PARALLEL) return false;
@@ -131,7 +320,7 @@ bool Geometry_Object::check_intersection(const Triangle &t, const Cut &c) {
     return check_intersection(t, p);
 }
 
-bool Geometry_Object::check_intersection(const Triangle &t, const point &p) {
+bool Intersection_Finder::check_intersection(const Triangle &t, const point &p) {
     if(is_point_on_plane(t.pl(), p) == false) return false;
 
     vec a1 = mult_vec(vec(t.p1(), t.p2()), vec(t.p1(), p));
@@ -155,7 +344,7 @@ bool Geometry_Object::check_intersection(const Triangle &t, const point &p) {
     return true;
 }
 
-bool Geometry_Object::check_intersection(const Cut &c1, const Cut &c2) {
+bool Intersection_Finder::check_intersection(const Cut &c1, const Cut &c2) {
     if(is_points_on_one_line(c1.p_begin(), c1.p_end(), c2.p_begin())) {
         if(check_intersection(c1, c2.p_begin()) == true) return true;
         else return check_intersection(c1, c2.p_end());
@@ -187,7 +376,7 @@ bool Geometry_Object::check_intersection(const Cut &c1, const Cut &c2) {
                                        vec_2d(c2.vec().x(), c2.vec().y())));
 }
 
-bool Geometry_Object::check_intersection(const Cut &c, const point &p) {
+bool Intersection_Finder::check_intersection(const Cut &c, const point &p) {
     const vec& v_c = c.vec();
     const vec v_p(c.p_begin(), p);
     if(vec::is_parallel(v_c, v_p) == false) return false;
@@ -215,270 +404,8 @@ bool Geometry_Object::check_intersection(const Cut &c, const point &p) {
     return true;
 }
 
-bool Geometry_Object::check_intersection(const point &p1, const point &p2) {
+bool Intersection_Finder::check_intersection(const point &p1, const point &p2) {
     return is_points_match(p1, p2);
-}
-
-
-
-
-//------------------------------Geometry_Objects_Storage---------------------------
-/*
-Geometry_Object_Storage::Geometry_Object_Storage(const std::vector<Undefined_Object>& undef_objects) {
-    for(size_t i = 0; i < undef_objects.size(); ++i) {
-        const Undefined_Object& cur_obj = undef_objects[i];
-
-        if(is_points_match(cur_obj.p1(), cur_obj.p2())) {
-
-            if(is_points_match(cur_obj.p1(), cur_obj.p3())) {
-                Object_Point p(cur_obj.p1(), i);
-                obj_point_storage_.push_back(p);
-                continue;
-            }
-
-            Object_Cut c(Cut(cur_obj.p1(), cur_obj.p3()), i);
-            obj_cut_storage_.push_back(c);
-            continue;;
-        }
-
-        if((is_points_match(cur_obj.p1(), cur_obj.p3())) ||
-           (is_points_match(cur_obj.p2(), cur_obj.p3()))) {
-            Object_Cut c(Cut(cur_obj.p1(), cur_obj.p2()), i);
-            obj_cut_storage_.push_back(c);
-            continue;;
-        }
-
-        Object_Triangle t(Triangle(cur_obj.p1(), cur_obj.p2(), cur_obj.p3()), i);
-        obj_triangle_storage_.push_back(t);
-    }
-
-}
-*/
-
-
-
-//-------------------------------------Intersection_Finder------------------------
-
-Intersection_Finder::Intersection_Finder(std::vector<Geometry_Object>&& objects):
-    objects_(objects)
-{
-    intersection_flags_.reserve(objects_.size());
-    for(size_t i = 0; i < objects_.size(); ++i) {
-        intersection_flags_.push_back(false);
-    }
-}
-
-Objects_and_Intersections Intersection_Finder::compute_intersections() {
-
-    for(size_t i = 0; i < objects_.size(); ++i) {
-        objects_[i].define_object();
-    }
-
-    std::vector<Geometry_Object*> p_objects(objects_.size());
-    for(size_t i = 0; i < objects_.size(); ++i) {
-        p_objects[i] = &(objects_[i]);
-    }
-
-    compute_intersections_recursive_algorithm(p_objects);
-
-    std::cout << iter1 << " " << iter2 << " " << iter3 << " " << iter4 << std::endl;
-
-    Objects_and_Intersections answer(std::move(objects_),
-                                     std::move(intersection_flags_));
-    return answer;
-}
-
-void Intersection_Finder::compute_intersections_recursive_algorithm(
-        const std::vector<Geometry_Object*>& p_objects)
-{
-    if(p_objects.size() > 1) {
-        Geometry_Object* root_object = p_objects[0];
-
-        assert(root_object->type() != UNDEFINED);
-
-        if(root_object->type() == TRIANGLE) {
-            root_triangle_case(p_objects);
-            return;
-        }
-
-        if(root_object->type() == CUT) {
-            root_cut_case(p_objects);
-            return;
-        }
-
-        assert(root_object->type() == POINT);
-        root_point_case(p_objects);
-    }
-}
-
-void Intersection_Finder::root_triangle_case(const std::vector<Geometry_Object*>& p_objects) {
-    const Triangle& root_t = p_objects[0]->triangle();
-    const Plane& pl = root_t.pl();
-    std::vector<Geometry_Object*> p_objects_new1;
-    std::vector<Geometry_Object*> p_objects_new2;
-
-    for(size_t i = 1; i < p_objects.size(); ++i) {
-        Geometry_Object* cur_obj = p_objects[i];
-
-        if(cur_obj->type() == TRIANGLE) {
-            const Triangle& t = cur_obj->triangle();
-            int k = pl.triangle_side_plane(t);
-
-            if(k != 1) p_objects_new2.push_back(cur_obj);
-            if(k != -1) p_objects_new1.push_back(cur_obj);
-
-            if(k == 0) {
-                if(Geometry_Object::check_intersection(root_t, t)) {
-                    intersection_flags_[p_objects[0]->number()] = true;
-                    intersection_flags_[cur_obj->number()] = true;
-                }
-            }
-
-            continue;
-        }
-
-        if(cur_obj->type() == CUT) {
-            const Cut& c = cur_obj->cut();
-            int k = pl.cut_side_plane(c);
-
-            if(k != 1) p_objects_new2.push_back(cur_obj);
-            if(k != -1) p_objects_new1.push_back(cur_obj);
-
-            if(k == 0) {
-                if(Geometry_Object::check_intersection(root_t, c)) {
-                    intersection_flags_[p_objects[0]->number()] = true;
-                    intersection_flags_[cur_obj->number()] = true;
-                }
-            }
-
-            continue;
-        }
-
-        assert(cur_obj->type() == POINT);
-        const point& p = cur_obj->pointt();
-        int k = pl.point_side_plane(p);
-
-        if(k != 1) p_objects_new2.push_back(cur_obj);
-        if(k != -1) p_objects_new1.push_back(cur_obj);
-
-        if(k == 0) {
-            if(Geometry_Object::check_intersection(root_t, p)) {
-                intersection_flags_[p_objects[0]->number()] = true;
-                intersection_flags_[cur_obj->number()] = true;
-            }
-        }
-    }
-
-    assert((p_objects_new1.size() < p_objects.size()) &&
-           (p_objects_new2.size() < p_objects.size()));
-
-    ++iter1;
-
-    if(p_objects_new1.size() == (p_objects.size() - 1)) {
-        ++iter2;
-        compute_intersections_recursive_algorithm(p_objects_new1);
-        return;
-    }
-
-    if (p_objects_new2.size() == (p_objects.size() - 1)) {
-        ++iter3;
-        compute_intersections_recursive_algorithm(p_objects_new2);
-        return;
-    }
-
-    ++iter4;
-    compute_intersections_recursive_algorithm(p_objects_new1);
-    compute_intersections_recursive_algorithm(p_objects_new2);
-}
-
-void Intersection_Finder::root_cut_case(const std::vector<Geometry_Object*>& p_objects) {
-    const Cut& root_c = p_objects[0]->cut();
-    std::vector<Geometry_Object*> p_objects_new;
-    p_objects_new.reserve(p_objects.size() - 1);
-
-    for(size_t i = 1; i < p_objects.size(); ++i) {
-        Geometry_Object* cur_obj = p_objects[i];
-        p_objects_new.push_back(cur_obj);
-
-        if(cur_obj->type() == TRIANGLE) {
-            const Triangle& t = cur_obj->triangle();
-
-            if(Geometry_Object::check_intersection(root_c, t)) {
-                intersection_flags_[p_objects[0]->number()] = true;
-                intersection_flags_[cur_obj->number()] = true;
-            }
-
-            continue;
-        }
-
-        if(cur_obj->type() == CUT) {
-            const Cut& c = cur_obj->cut();
-
-            if(Geometry_Object::check_intersection(root_c, c)) {
-                intersection_flags_[p_objects[0]->number()] = true;
-                intersection_flags_[cur_obj->number()] = true;
-            }
-
-            continue;
-        }
-
-        assert(cur_obj->type() == POINT);
-        const point& p = cur_obj->pointt();
-
-        if(Geometry_Object::check_intersection(root_c, p)) {
-            intersection_flags_[p_objects[0]->number()] = true;
-            intersection_flags_[cur_obj->number()] = true;
-        }
-    }
-
-    assert(p_objects_new.size() < p_objects.size());
-
-    compute_intersections_recursive_algorithm(p_objects_new);
-}
-
-void Intersection_Finder::root_point_case(const std::vector<Geometry_Object*>& p_objects) {
-    const point& root_p = p_objects[0]->pointt();
-    std::vector<Geometry_Object*> p_objects_new;
-    p_objects_new.reserve(p_objects.size() - 1);
-
-    for(size_t i = 1; i < p_objects.size(); ++i) {
-        Geometry_Object* cur_obj = p_objects[i];
-        p_objects_new.push_back(cur_obj);
-
-        if(cur_obj->type() == TRIANGLE) {
-            const Triangle& t = cur_obj->triangle();
-
-            if(Geometry_Object::check_intersection(root_p, t)) {
-                intersection_flags_[p_objects[0]->number()] = true;
-                intersection_flags_[cur_obj->number()] = true;
-            }
-
-            continue;
-        }
-
-        if(cur_obj->type() == CUT) {
-            const Cut& c = cur_obj->cut();
-
-            if(Geometry_Object::check_intersection(root_p, c)) {
-                intersection_flags_[p_objects[0]->number()] = true;
-                intersection_flags_[cur_obj->number()] = true;
-            }
-
-            continue;
-        }
-
-        assert(cur_obj->type() == POINT);
-        const point& p = cur_obj->pointt();
-
-        if(Geometry_Object::check_intersection(root_p, p)) {
-            intersection_flags_[p_objects[0]->number()] = true;
-            intersection_flags_[cur_obj->number()] = true;
-        }
-    }
-
-    assert(p_objects_new.size() < p_objects.size());
-
-    compute_intersections_recursive_algorithm(p_objects_new);
 }
 
 

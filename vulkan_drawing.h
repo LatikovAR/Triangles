@@ -4,6 +4,21 @@
 #include <utility>
 
 #include "geometry.h"
+#include "rotator.h"
 #include "intersection_finder.h"
 
-int draw_triangles_driver(const geometry::Objects_and_Intersections&& objects_for_draw);
+namespace vulkan {
+
+class Draw_Triangles_Manager final {
+private:
+    const unsigned long long POS_LIFETIME = 50; //in milliseconds
+
+    geometry::Rotator rotator_; //objects inside
+public:
+    Draw_Triangles_Manager(std::vector<geometry::Rotatable_Object>&& objects):
+        rotator_(std::move(objects)) {}
+
+    void run();
+};
+
+} //namespace vulkan
