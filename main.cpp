@@ -5,9 +5,8 @@
 #include <cassert>
 #include <vector>
 
-#include "geometry.h"
-#include "intersection_finder.h"
-#include "rotator.h"
+#include "Geometry/geometry.h"
+#include "Geometry/rotator.h"
 #include "vulkan_drawing.h"
 
 using namespace geometry;
@@ -47,6 +46,10 @@ int main() {
     size_t n;
     std::cin >> n;
 
+    double lifetime;
+    std::cin >> lifetime;
+    lifetime *= 1000; //converting in milliseconds
+
     std::vector<Rotatable_Object> rot_objs;
     rot_objs.reserve(n);
 
@@ -56,7 +59,7 @@ int main() {
 
     std::cout << "Input complete.\n\n";
 
-    vulkan::Draw_Triangles_Manager draw{std::move(rot_objs)};
+    vulkan::Draw_Triangles_Manager draw{std::move(rot_objs), lifetime};
     draw.run();
 
     return 0;

@@ -15,7 +15,7 @@ find_package(glm
 set(GLFW D:/glfw-3.3.2.bin.WIN64)
 set(GLM D:/glm)
 
-add_library(geometry STATIC geometry_base.cpp geometry.cpp intersection_finder.cpp rotator.cpp)
+add_subdirectory(Geometry)
 
 add_library(vulkan_visualization STATIC vulkan_drawing.cpp)
 target_link_libraries(vulkan_visualization geometry)

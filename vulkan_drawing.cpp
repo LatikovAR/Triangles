@@ -29,8 +29,6 @@
 #include <winuser.h>
 #endif
 
-#include "geometry.h"
-#include "intersection_finder.h"
 #include "vulkan_drawing.h"
 
 namespace vulkan {
@@ -243,6 +241,9 @@ private:
     static void framebufferResizeCallback(
             GLFWwindow* window,
             int width, int height);
+
+public:
+    void wait_for_device() { vkDeviceWaitIdle(device); }
 };
 
 
@@ -1800,19 +1801,22 @@ void Draw_Triangles_Manager::run() {
     auto time_last_rotation = time_null_point;
 
     while(executor.draw_again() == 0) {
-
         auto cur_time = std::chrono::high_resolution_clock::now();
+        double time_after_start =
+                std::chrono::duration<double,
+                std::chrono::milliseconds::period>
+                (cur_time - time_null_point).count();
         double time_after_rotation =
                 std::chrono::duration<double, std::chrono::milliseconds::period>
                 (cur_time - time_last_rotation).count();
 
+        if(time_after_start > lifetime_) {
+            executor.wait_for_device();
+            break;
+        }
+
         if(time_after_rotation > POS_LIFETIME) {
             time_last_rotation = cur_time;
-
-            double time_after_start =
-                    std::chrono::duration<double,
-                    std::chrono::milliseconds::period>
-                    (cur_time - time_null_point).count();
 
             std::vector<geometry::Geometry_Object>cur_objs =
                     rotator_.cur_objects_pos(time_after_start);
