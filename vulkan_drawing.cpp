@@ -380,9 +380,6 @@ void Draw_Triangles::initVulkan() {
 }
 
 void Draw_Triangles::update_triangles(geometry::Objects_and_Intersections&& objs_and_inters) {
-    if(objs_and_inters.objects_num() * 3 != vertices.size())
-        throw std::invalid_argument("Wrong num of triangles");
-
     build_vert_and_ind_arrays(std::move(objs_and_inters));
 
     updateVertexBuffer();

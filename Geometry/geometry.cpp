@@ -332,6 +332,29 @@ void Geometry_Object::define_object() {
         return;
     }
 
+    if(is_points_on_one_line(u_o_.p1(), u_o_.p2(), u_o_.p3())) {
+        obj_type_ = CUT;
+
+        Cut c1(u_o_.p1(), u_o_.p2());
+        Cut c2(u_o_.p2(), u_o_.p3());
+        Cut c3(u_o_.p1(), u_o_.p3());
+
+        double l1 = c1.length();
+        double l2 = c2.length();
+        double l3 = c3.length();
+
+        if((l1 >= l2) && (l1 >= l3)) {
+            c_ = c1;
+            return;
+        }
+        if((l2 >= l3) && (l2 >= l1)) {
+            c_ = c2;
+            return;
+        }
+        c_ = c3;
+        return;
+    }
+
     obj_type_ = TRIANGLE;
     t_ = Triangle(u_o_.p1(), u_o_.p2(), u_o_.p3());
 }
