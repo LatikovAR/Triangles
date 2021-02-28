@@ -9,9 +9,6 @@ set(CMAKE_CXX_FLAGS "-O3")
 
 find_package(Vulkan REQUIRED)
 
-set(GLFW D:/glfw-3.3.2.bin.WIN64)
-set(GLM D:/glm)
-
 add_subdirectory(Geometry)
 
 add_library(vulkan_visualization STATIC vulkan_drawing.cpp)
