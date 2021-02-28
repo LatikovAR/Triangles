@@ -181,7 +181,7 @@ public:
 
     const point& p_begin() const { return p_; }
     point p_end() const { return p_ + v_; }
-    const vec& vec() const { return v_; }
+    const vec& vect() const { return v_; }
 
     double length() const { return v_.length(); }
     void print() const;

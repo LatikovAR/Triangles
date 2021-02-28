@@ -102,7 +102,7 @@ g_obj_pos planes_pos(const Plane &pl1, const Plane &pl2) {
 }
 
 g_obj_pos cut_and_plane_pos(const Plane &pl, const Cut &c) {
-    if(is_vec_parallel_plane(pl, c.vec()) == false) {
+    if(is_vec_parallel_plane(pl, c.vect()) == false) {
         return COMMON;
     }
 
@@ -114,13 +114,13 @@ g_obj_pos cut_and_plane_pos(const Plane &pl, const Cut &c) {
 }
 
 point intersection_plane_and_line(const Plane &pl, const Cut &c) {
-    if(is_vec_parallel_plane(pl, c.vec())) {
+    if(is_vec_parallel_plane(pl, c.vect())) {
         if(is_point_on_plane(pl, c.p_begin())) { return c.p_begin(); }
         else throw std::invalid_argument("Cut and plane are parallel");
     }
 
     double k, t, x, y, z;
-    const vec& v = c.vec();
+    const vec& v = c.vect();
     const point& p = c.p_begin();
     k = pl.A() * v.x() + pl.B() * v.y() + pl.C() * v.z();
     t = pl.A() * p.x() + pl.B() * p.y() + pl.C() * p.z() + pl.D();
@@ -201,7 +201,7 @@ bool is_cut_and_triangle_intersects_on_plane(const Triangle &t, const Cut &c) {
         point_2d p3_2d(t.p3().x(), t.p3().y());
         Triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
         Cut_2d c_2d(point_2d(c.p_begin().x(), c.p_begin().y()),
-                    vec_2d(c.vec().x(), c.vec().y()));
+                    vec_2d(c.vect().x(), c.vect().y()));
         return is_cut_and_triangle_intersects_2d(t_2d, c_2d);
     }
 
@@ -211,7 +211,7 @@ bool is_cut_and_triangle_intersects_on_plane(const Triangle &t, const Cut &c) {
         point_2d p3_2d(t.p3().x(), t.p3().z());
         Triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
         Cut_2d c_2d(point_2d(c.p_begin().x(), c.p_begin().z()),
-                    vec_2d(c.vec().x(), c.vec().z()));
+                    vec_2d(c.vect().x(), c.vect().z()));
         return is_cut_and_triangle_intersects_2d(t_2d, c_2d);
     }
 
@@ -221,7 +221,7 @@ bool is_cut_and_triangle_intersects_on_plane(const Triangle &t, const Cut &c) {
         point_2d p3_2d(t.p3().y(), t.p3().z());
         Triangle_2d t_2d(p1_2d, p2_2d, p3_2d);
         Cut_2d c_2d(point_2d(c.p_begin().y(), c.p_begin().z()),
-                    vec_2d(c.vec().y(), c.vec().z()));
+                    vec_2d(c.vect().y(), c.vect().z()));
         return is_cut_and_triangle_intersects_2d(t_2d, c_2d);
     }
 }
@@ -360,7 +360,7 @@ void Geometry_Object::define_object() {
 }
 
 void Geometry_Object::rotate_object(const Cut& axis, double angle) {
-    Normalized_Quaternion quat(angle, axis.vec());
+    Normalized_Quaternion quat(angle, axis.vect());
 
     if(obj_type_ == TRIANGLE) {
         vec v(axis.p_begin(), t_.p1());
@@ -384,7 +384,7 @@ void Geometry_Object::rotate_object(const Cut& axis, double angle) {
         v.rotate_vec(quat);
         point p_begin_new = axis.p_begin() + v;
 
-        v = c_.vec();
+        v = c_.vect();
         v.rotate_vec(quat);
 
         c_ = Cut(p_begin_new, v);

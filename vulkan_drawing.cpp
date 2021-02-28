@@ -1801,10 +1801,10 @@ void Draw_Triangles_Manager::run() {
         auto cur_time = std::chrono::high_resolution_clock::now();
         double time_after_start =
                 std::chrono::duration<double,
-                std::chrono::milliseconds::period>
+                std::chrono::seconds::period>
                 (cur_time - time_null_point).count();
         double time_after_rotation =
-                std::chrono::duration<double, std::chrono::milliseconds::period>
+                std::chrono::duration<double, std::chrono::seconds::period>
                 (cur_time - time_last_rotation).count();
 
         if(time_after_start > lifetime_) {

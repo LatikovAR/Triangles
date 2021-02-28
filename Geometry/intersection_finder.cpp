@@ -9,8 +9,8 @@ namespace geometry {
 
 //-------------------------------------Intersection_Finder------------------------
 
-Intersection_Finder::Intersection_Finder(std::vector<Geometry_Object>&& objects):
-    objects_(objects)
+Intersection_Finder::Intersection_Finder(std::vector<Geometry_Object> objects):
+    objects_(std::move(objects))
 {
     intersection_flags_.reserve(objects_.size());
     for(size_t i = 0; i < objects_.size(); ++i) {
@@ -303,7 +303,7 @@ bool Intersection_Finder::check_intersection(const Triangle &t, const Cut &c) {
     assert(pos == COMMON);
     point p = intersection_plane_and_line(t.pl(), c);
 
-    const vec& v = c.vec();
+    const vec& v = c.vect();
     if((v.x() >= v.y()) && (v.x() >= v.z())) {
         double k = (p.x() - c.p_begin().x()) / v.x();
         if((k < 0) || (k > 1)) return false;
@@ -358,26 +358,26 @@ bool Intersection_Finder::check_intersection(const Cut &c1, const Cut &c2) {
 
     if((fabs(pl.A()) >= fabs(pl.B())) && (fabs(pl.A()) >= fabs(pl.C()))) {
         return is_cut_2d_intersects(Cut_2d(point_2d(c1.p_begin().y(), c1.p_begin().z()),
-                                           vec_2d(c1.vec().y(), c1.vec().z())),
+                                           vec_2d(c1.vect().y(), c1.vect().z())),
                                     Cut_2d(point_2d(c2.p_begin().y(), c2.p_begin().z()),
-                                           vec_2d(c2.vec().y(), c2.vec().z())));
+                                           vec_2d(c2.vect().y(), c2.vect().z())));
     }
 
     if((fabs(pl.B()) >= fabs(pl.A())) && (fabs(pl.B()) >= fabs(pl.C()))) {
         return is_cut_2d_intersects(Cut_2d(point_2d(c1.p_begin().x(), c1.p_begin().z()),
-                                           vec_2d(c1.vec().x(), c1.vec().z())),
+                                           vec_2d(c1.vect().x(), c1.vect().z())),
                                     Cut_2d(point_2d(c2.p_begin().x(), c2.p_begin().z()),
-                                           vec_2d(c2.vec().x(), c2.vec().z())));
+                                           vec_2d(c2.vect().x(), c2.vect().z())));
     }
 
     return is_cut_2d_intersects(Cut_2d(point_2d(c1.p_begin().x(), c1.p_begin().y()),
-                                       vec_2d(c1.vec().x(), c1.vec().y())),
+                                       vec_2d(c1.vect().x(), c1.vect().y())),
                                 Cut_2d(point_2d(c2.p_begin().x(), c2.p_begin().y()),
-                                       vec_2d(c2.vec().x(), c2.vec().y())));
+                                       vec_2d(c2.vect().x(), c2.vect().y())));
 }
 
 bool Intersection_Finder::check_intersection(const Cut &c, const point &p) {
-    const vec& v_c = c.vec();
+    const vec& v_c = c.vect();
     const vec v_p(c.p_begin(), p);
     if(vec::is_parallel(v_c, v_p) == false) return false;
 

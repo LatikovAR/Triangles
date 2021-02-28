@@ -48,7 +48,6 @@ int main() {
 
     double lifetime;
     std::cin >> lifetime;
-    lifetime *= 1000; //converting in milliseconds
 
     std::vector<Rotatable_Object> rot_objs;
     rot_objs.reserve(n);

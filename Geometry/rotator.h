@@ -22,9 +22,9 @@ private:
     std::vector<Rotatable_Object> objects_;
 public:
     //speed should be in radians/seconds
-    Rotator(std::vector<Rotatable_Object>&& objects);
+    Rotator(std::vector<Rotatable_Object> objects);
 
-    //time should be inputed in milliseconds
+    //time should be inputed in seconds
     //time = 0 - position of the base_objects_
     std::vector<Geometry_Object> cur_objects_pos(double time) const;
 
