@@ -8,9 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-O3")
 
 find_package(Vulkan REQUIRED)
-find_package(glm
-             PATHS D:/glm/cmake/glm
-             REQUIRED)
 
 set(GLFW D:/glfw-3.3.2.bin.WIN64)
 set(GLM D:/glm)

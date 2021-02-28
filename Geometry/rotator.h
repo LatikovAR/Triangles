@@ -13,8 +13,8 @@ struct Rotatable_Object {
     Cut axis;
     double speed;
 
-    Rotatable_Object(Geometry_Object&& obj, Cut&& ax, double sp):
-        object(obj), axis(ax), speed(sp) {}
+    Rotatable_Object(Geometry_Object obj, Cut ax, double sp):
+        object(std::move(obj)), axis(std::move(ax)), speed(sp) {}
 };
 
 class Rotator final {

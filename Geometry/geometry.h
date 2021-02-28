@@ -343,6 +343,8 @@ public:
     Geometry_Object() {}
     Geometry_Object(size_t number, const Undefined_Object& undef_obj):
         number_(number), obj_type_(UNDEFINED), u_o_(undef_obj) {}
+    Geometry_Object(size_t number, const Triangle& t):
+        number_(number), obj_type_(TRIANGLE), t_(t) {}
 
     void define_object();
     void rotate_object(const Cut& axis, double angle); //angle should be in radians
