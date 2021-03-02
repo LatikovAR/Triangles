@@ -14,6 +14,7 @@ enum g_obj_pos {COMMON, PARALLEL, MATCH};
 enum g_obj_type {TRIANGLE, CUT, POINT, UNDEFINED};
 
 const double DOUBLE_GAP = 0.000001;
+const double DOUBLE_GAP_CRITICAL = 0.0000001;
 
 
 //----------------------------------------point-----------------------------------
@@ -42,6 +43,7 @@ point operator+(const point& p, const vec& v);
 point operator+(const vec& v, const point& p);
 
 bool is_points_match(const point &p1, const point &p2);
+bool is_points_match_critical(const point &p1, const point &p2);
 bool is_points_on_one_line(const point &p1, const point &p2, const point &p3);
 
 
@@ -96,6 +98,7 @@ public:
     double length() const { return sqrt(x_ * x_ + y_ * y_ + z_ * z_); }
     void normalize();
     bool is_null() const { return fabs(length()) < DOUBLE_GAP; }
+    bool is_null_critical() const { return fabs(length()) < DOUBLE_GAP_CRITICAL; }
     static bool is_parallel(const vec& v1, const vec& v2);
     void rotate_vec(const Normalized_Quaternion& quat);
 };
@@ -130,6 +133,7 @@ public:
     double length() const { return sqrt(x_ * x_ + y_ * y_); }
     void normalize();
     bool is_null() const { return fabs(length()) < DOUBLE_GAP; }
+    bool is_null_critical() const { return fabs(length()) < DOUBLE_GAP_CRITICAL; }
     static bool is_parallel(const vec_2d& v1, const vec_2d& v2);
 };
 
@@ -173,10 +177,10 @@ protected:
     vec v_;
 public:
     Cut(const point &p1, const point &p2): p_(p1), v_(p1, p2) {
-        if(v_.is_null()) throw std::invalid_argument("Cut length = 0");
+        if(v_.is_null_critical()) throw std::invalid_argument("Cut length = 0");
     }
     Cut(const point &p, const vec &v): p_(p), v_(v) {
-        if(v_.is_null()) throw std::invalid_argument("Cut length = 0");
+        if(v_.is_null_critical()) throw std::invalid_argument("Cut length = 0");
     }
 
     const point& p_begin() const { return p_; }
@@ -193,10 +197,10 @@ private:
     vec_2d v_;
 public:
     Cut_2d(const point_2d &p1, const point_2d &p2): p_(p1), v_(p1, p2) {
-        if(v_.is_null()) throw std::invalid_argument("Cut_2d length = 0");
+        if(v_.is_null_critical()) throw std::invalid_argument("Cut_2d length = 0");
     }
     Cut_2d(const point_2d &p, const vec_2d &v): p_(p), v_(v) {
-        if(v_.is_null()) throw std::invalid_argument("Cut_2d length = 0");
+        if(v_.is_null_critical()) throw std::invalid_argument("Cut_2d length = 0");
     }
 
     const point_2d& p_begin() const { return p_; }

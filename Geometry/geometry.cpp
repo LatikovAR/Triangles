@@ -39,7 +39,7 @@ bool is_cut_2d_intersects(const Cut_2d &c1, const Cut_2d &c2) {
             a2 = (c2.p_end().x() - c1.p_begin().x()) / c1.vec().x();
         }
         else {
-            assert(fabs(c1.vec().y()) > DOUBLE_GAP);
+            assert(fabs(c1.vec().y()) > DOUBLE_GAP_CRITICAL);
             a1 = (c2.p_begin().y() - c1.p_begin().y()) / c1.vec().y();
             a2 = (c2.p_end().y() - c1.p_begin().y()) / c1.vec().y();
         }

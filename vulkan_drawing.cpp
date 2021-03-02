@@ -38,7 +38,9 @@ struct Vertex final {
     glm::vec3 color;
     glm::vec3 normal;
 
-    Vertex(const glm::vec3& pos_in, const glm::vec3& color_in, const glm::vec3& normal_in):
+    Vertex(const glm::vec3& pos_in,
+           const glm::vec3& color_in,
+           const glm::vec3& normal_in):
         pos(pos_in),
         color(color_in), normal(normal_in) {}
 
@@ -56,11 +58,37 @@ struct UniformBufferObject final {
     alignas(16) glm::mat4 proj;
 };
 
+
+
 class Draw_Triangles final {
 private:
-    GLFWwindow* window;
-    const uint32_t WIDTH = 1000;
-    const uint32_t HEIGHT = 900;
+
+    class GLFW_Window final {
+    private:
+        const uint32_t WIDTH = 1200;
+        const uint32_t HEIGHT = 900;
+    public:
+        GLFWwindow* window;
+
+        GLFW_Window() {
+            glfwInit();
+
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+            window = glfwCreateWindow(static_cast<int>(WIDTH), static_cast<int>(HEIGHT), "Vulkan", nullptr, nullptr);
+            glfwSetWindowUserPointer(window, this);
+            glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+        }
+
+        ~GLFW_Window() {
+            glfwDestroyWindow(window);
+            glfwTerminate();
+        }
+    };
+
+    GLFW_Window glfw_window_;
+
     const float Z_ROTATE_SPEED = 0.01f;
     const float Y_ROTATE_SPEED = 0.01f;
     const float ZOOM_SPEED = 0.2f;
@@ -133,9 +161,10 @@ private:
     };
 
 public:
-    Draw_Triangles(geometry::Objects_and_Intersections&& objs_and_inters) {
+    Draw_Triangles(geometry::Objects_and_Intersections&& objs_and_inters):
+        glfw_window_()
+    {
         build_vert_and_ind_arrays(std::move(objs_and_inters));
-        initWindow();
         initVulkan();
         //print_available_vulkan_extensions();
     }
@@ -151,7 +180,6 @@ public:
 
 private:
     void build_vert_and_ind_arrays(geometry::Objects_and_Intersections&& objs_and_inters);
-    void initWindow();
     void initVulkan();
     void cleanup();
     void recreateSwapChain();
@@ -345,17 +373,6 @@ void Draw_Triangles::build_vert_and_ind_arrays(
     }
 }
 
-void Draw_Triangles::initWindow() {
-    glfwInit();
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-    window = glfwCreateWindow(static_cast<int>(WIDTH), static_cast<int>(HEIGHT), "Vulkan", nullptr, nullptr);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-}
-
 void Draw_Triangles::initVulkan() {
     createInstance();
     setupDebugMessenger();
@@ -366,7 +383,29 @@ void Draw_Triangles::initVulkan() {
     createImageViews();
     createRenderPass();
     createDescriptorSetLayout();
-    createGraphicsPipeline();
+
+    try {
+        createGraphicsPipeline();
+    }
+    catch (No_File_Exception& err) {
+
+        vkDestroyRenderPass(device, renderPass, nullptr);
+        for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+            vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+        }
+        vkDestroySwapchainKHR(device, swapChain, nullptr);
+        vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+        vkDestroyDevice(device, nullptr);
+        if (enableValidationLayers) {
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
+        vkDestroySurfaceKHR(instance, surface, nullptr);
+        vkDestroyInstance(instance, nullptr);
+
+        throw;
+    }
+
     createCommandPool();
     createDepthResources();
     createFramebuffers();
@@ -387,7 +426,7 @@ void Draw_Triangles::update_triangles(geometry::Objects_and_Intersections&& objs
 }
 
 int Draw_Triangles::draw_again() {
-    if(glfwWindowShouldClose(window)) {
+    if(glfwWindowShouldClose(glfw_window_.window)) {
         vkDeviceWaitIdle(device);
         return -1;
     }
@@ -425,17 +464,13 @@ void Draw_Triangles::cleanup() {
 
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
-
-    glfwDestroyWindow(window);
-
-    glfwTerminate();
 }
 
 void Draw_Triangles::recreateSwapChain() {
     int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
+    glfwGetFramebufferSize(glfw_window_.window, &width, &height);
     while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(glfw_window_.window, &width, &height);
         glfwWaitEvents();
     }
 
@@ -566,7 +601,7 @@ void Draw_Triangles::createInstance() {
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = "Triangles";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -604,7 +639,7 @@ void Draw_Triangles::createInstance() {
 }
 
 void Draw_Triangles::createSurface() {
-    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance, glfw_window_.window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
 }
@@ -845,7 +880,7 @@ VkExtent2D Draw_Triangles::chooseSwapExtent(
         return capabilities.currentExtent;
     } else {
         int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(glfw_window_.window, &width, &height);
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),
@@ -928,9 +963,20 @@ void Draw_Triangles::createImageViews() {
 }
 
 void Draw_Triangles::createGraphicsPipeline() {
-    auto vertShaderCode = readFile("vert.spv");
-    auto fragShaderCode = readFile("frag.spv");
-    //std:: cout << vertShaderCode.size() << "  " << fragShaderCode.size() << "\n";
+    std::vector<char> vertShaderCode;
+    std::vector<char> fragShaderCode;
+
+    try {
+        vertShaderCode = readFile("vert.spv");
+    }  catch (std::runtime_error) {
+        throw No_File_Exception("Unable to read vert.spv");
+    }
+
+    try {
+        fragShaderCode = readFile("frag.spv");
+    }  catch (std::runtime_error) {
+        throw No_File_Exception("Unable to read frag.spv");
+    }
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1574,14 +1620,9 @@ void Draw_Triangles::createUniformBuffers() {
 }
 
 void Draw_Triangles::updateUniformBuffer(uint32_t currentImage) {
-    static float z_rotate_param = 0.0f;
-    static float y_rotate_param = 0.0f;
-    static float zoom_param = 45.0f;
-
-    //static auto startTime = std::chrono::high_resolution_clock::now();
-
-    //auto currentTime = std::chrono::high_resolution_clock::now();
-    //float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    static float z_rotate_param = 2.0f;
+    static float y_rotate_param = -1.0f;
+    static float zoom_param = 50.0f;
 
 #ifdef _WIN32
     if(GetAsyncKeyState(VK_LEFT)) {

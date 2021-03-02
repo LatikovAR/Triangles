@@ -49,6 +49,15 @@ bool is_points_match(const point &p1, const point &p2) {
     return true;
 }
 
+bool is_points_match_critical(const point &p1, const point &p2) {
+    if((fabs(p1.x() - p2.x()) > DOUBLE_GAP_CRITICAL) ||
+       (fabs(p1.y() - p2.y()) > DOUBLE_GAP_CRITICAL) ||
+       (fabs(p1.z() - p2.z()) > DOUBLE_GAP_CRITICAL)) {
+        return false;
+    }
+    return true;
+}
+
 bool is_points_on_one_line(const point &p1, const point &p2, const point &p3) {
     vec v1(p1, p2);
     vec v2(p1, p3);

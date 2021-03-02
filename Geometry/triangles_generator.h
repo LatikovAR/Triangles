@@ -10,8 +10,8 @@ namespace geometry {
 
 class Triangles_Generator final {
 private:
-    const size_t T_NUM = 1000;
-    const double AREA_SIZE = 200.0;
+    const size_t T_NUM = 10000;
+    const double AREA_SIZE = 50.0;
     const double MAX_T_SIZE = 5.0;
     const int ACCURACY_COEF = 100;
     const double MAX_SPEED = 20.0;

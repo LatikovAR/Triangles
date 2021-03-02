@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <utility>
+#include<stdexcept>
 
 #include "Geometry/geometry.h"
 #include "Geometry/rotator.h"
@@ -20,6 +20,15 @@ public:
         rotator_(std::move(objects)), lifetime_(lifetime) {}
 
     void run();
+};
+
+class No_File_Exception final:
+        std::runtime_error
+{
+public:
+    using std::runtime_error::what;
+
+    No_File_Exception(std::string information): std::runtime_error(information) {}
 };
 
 } //namespace vulkan
